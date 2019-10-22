@@ -1,0 +1,6 @@
+# Latex auxiliary files:
+*.aux
+*.log
+*.synctex.gz
+*.toc
+
