@@ -13,6 +13,7 @@
 \newtheorem{DEF}{Definition}
 \newtheorem{LEM}{Lemma}
 \newtheorem{EX}{Example}
+\newtheorem{COR}{Corollary}
 
 \newcommand\mcl[1]{\mathcal{#1}}
 
@@ -108,8 +109,167 @@ ERM_\mcl{H} \in argmin L_S(h)
 \end{equation}
 where $argmin$ stands for the set of hypotheses in $\mcl{H}$ that achieve the minimum value of $L_S(h)$.\\
 Since the choice of such a restriction is determined before the learner sees the training data, it should ideally be based on some prior knowledge about the problem to be learned. Intuitively, choosing a more restricted hypothesis class better protects us against overfitting but at the same time might cause us a stronger inductive bias: if the class is too small you will not find a good estimator.\\
-Now we would like to prove that, if $\mcl{H}$ is a finite class $ERM_\mcl{H}$ is guarantee not to overfit, provided it is based on a sufficiently large training sample (depending on the size of $\mcl{H}$). Limiting the dimension of $\mcl{H}$ ($\abs{\mcl{H}} < \infty$) seems not to be very realistic, because we usually have to deal with parameters defined in $\mathds{R}^d$: the correct assumption uses the finite precision with which computers manage real numbers.
+Now we would like to prove that, if $\mcl{H}$ is a finite class $ERM_\mcl{H}$ is guarantee not to overfit, provided it is based on a sufficiently large training sample (depending on the size of $\mcl{H}$). Limiting the dimension of $\mcl{H}$ ($\abs{\mcl{H}} < \infty$) seems not to be very realistic, because we usually have to deal with parameters defined in $\mathds{R}^d$: the correct assumption uses the finite precision with which computers manage real numbers.\\
+Let us now analyze the performance of the $ERM_\mcl{H}$ learning rule assuming that $\mcl{H}$ is a finite class. For a training sample, $S$, labeled according to some $f:\mcl{X}\to\mcl{Y}$, let $h_S$ denote a result of applying $ERM_\mcl{H}$ to $S$, i.e. $h_s\in argmin L_S(h)$. Let's make some assumptions:
+\begin{itemize}
+\item (\textbf{Realizability}) There exist a $h^*\in\mcl{H}$ such that $L_\mcl{D}(h^*)=0$: in practice we are asking for the existance of the perfect solution in our hypothesis class. Note that this assumption implies that with probability 1 over random samples, we have $L_S(h^*)=0$.
+\item (\textbf{i.i.d.}) The examples in the training set are indipendently and identically distributed (i.i.d.) according to the distribution $\mcl{D}$ and than labelled according the labeling function $f$. We denote this assumption by $S\sim\mcl{D}^m$ (this notation represents the fact that we sample $m$ times according to the distribution $\mcl{D}$). This assumption seems to be unrealistic too: the sampling is usually biased on the situation; you will never be able to sample reproducing the real distribution and leave them indipendent between each other. Anyway, the larger the sample get, the more likely it is to reflect more accurately the distribution ad labelig used to generate it.
+\end{itemize}
+Since $L_\mcl{D}(h_S)$ depends on the training set S, and that training set is picked up in a random process, there is a randomness in the choice of the predictor $h_S$ and, consequently, in the risk $L_\mcl{D}(h_S)$. It's never guarantee that the solution we find is the perfect one, because there is always some probability that the sampled training data happens to be very nonrepresentative of the underlying $\mcl{D}$.\\
+Usually we denote the probability o getting a nonrepresentative sample by $\delta$, and call $(1-\delta)$ the \textbf{confidence parameter} of our prediction.\\
+On the top of that, since we cannot guarantee a perfect label prediction, we introduce another parameter, the \textbf{accuracy parameter}, commonly denoted by $\varepsilon$.\\
+So, we interpret the event $L_\mcl{D}(h_S)>\varepsilon$ as a failure of the learner, while if $L_\mcl{D}(h_S)\leq\varepsilon$ we view the output of the algorithm as an approximately correct predictor.\\
 
+\vspace{0.5cm}
+\begin{THEO}
+Let $\mcl{H}$ be a finite hypothesis class. Let $\delta\in (0,1)$, $\varepsilon\in (0,1)$, and $m\in\mathds{N}$ (size of the training set, i.e. S contains $m$ i.i.d. samples) such that
+\[ m\geq\frac{\log (\abs{\mcl{H}}/\delta)}{\varepsilon} \]
+Then, for any $f$ and any $\mcl{D}$ for which the realizability assumption holds, with probability $\geq 1-\delta$ we have that for every $ERM$ hypothesis $h_S$ it holds that 
+\[ L_{\mcl{D},f}(h_S)\leq\varepsilon \] 
+\end{THEO}
+\begin{proof}
+robe
+\end{proof}
+
+This theorem tell us that, for a sufficiently large $m$, the $ERM_\mcl{H}$ rule over a finite hypothesis class will be \textit{probably} (with confidence $1-\delta$) \textit{approximately} (up to an error of $\varepsilon$) correct.\\
+Notes on the theorem:
+\begin{itemize}
+\item $\abs{\mcl{H}}$ is the cardinality (i.e. the dimension) of the hypothesis class
+\item The condition $m\geq\frac{\log (\abs{\mcl{H}}/\delta)}{\varepsilon}$ is just a sufficient (not necessary) condition. In fact it is a nearly weak request.
+\item $m$ does not depend on $f$ or on $\mcl{D}$.
+\end{itemize}
+
+\begin{figure}
+\centering
+%\includegraphics{}
+\caption{Each point in the large circle represents a possible m-tuple of instances. Each colored oval represents the set of “misleading” m-tuple of instances for some “bad” predictor $h\in\mcl{H}_B$. The $ERM$ can potentially overfit whenever it gets a misleading training set S. That is, for some $h\in\mcl{H}_B$ we have $L_S(h)=0$. The disequations found in the demostration of the theorem guarantee that for each individual bad hypothesis, $h\in\mcl{H}_B$, atmost $(1-\varepsilon)^m$-fraction of the training sets would be misleading. In particular, the larger $m$ is, the smaller each of these colored ovals becomes. The union bound formalizes the fact that the area representing the training sets that are misleading with respect to some $h\in\mcl{H}_B$ (that is, the training sets in M) is atmostthe sum of the areas of the colored ovals. Therefore, it is bounded by $\mcl{H}_B$ times the maximum size of a colored oval. Any sample S outside the colored ovals cannot cause the $ERM$ rule to overfit.}
+\end{figure}
+
+
+
+\chapter{PAC Learning}
+
+The title of this chapter stands for \textit{Probably Approximately Correct} learning: since the data are sampled accordingly to $\mcl{D}$, and since we can't find the perfect machine learning algorithm:
+\begin{itemize} 
+\item we can only be approximately correct (accuracy parameter $\varepsilon$: we are satisfied with a good $h_S$ for which $L_{\mcl{D},f}(h_S)\leq\varepsilon$)
+\item we can only be probably correct (we want $h_S$ to be a good hypothesis with probability $\geq 1-\delta$)
+\end{itemize}
+
+\begin{DEF}
+(\textbf{PAC learnability})\\
+A hypothesis class $\mcl{H}$ is PAC learnable if there exist a function $m_\mcl{H}:(0,1)^2\to\mathds{N}$ and a learning algorithm such that for every $\delta,\varepsilon\in(0,1)$, for every distribution $\mcl{D}$ over $\mcl{X}$, and for every labeling function $f:\mcl{X}\to\left\{0,1\right\}$, if the realizability assumption holds with respect to $\mcl{H},\mcl{D},f$, then when running the learning algorithm on $m\geq m_\mcl{H}(\varepsilon,\delta)$ i.i.d. examples generated by $\mcl{D}$ and labeled by $f$, the algorithm returns a hypothesis $h$ such that, with probability $\geq 1-\delta$ (over the choice of examples): $\mcl{L}_{\mcl{D},f}(h)\leq\varepsilon$.
+\end{DEF}
+
+Note: $m_\mcl{H}:(0,1)^2\to\mathds{N}$ is the sample complexity of learning $\mcl{H}$, in particular is the minimal integer that satisfies the requirements. This means that if we have an infinite number of possible hypotesis we cannot apply the theorem, but, at the same time, we can't be sure that the set is not learnable.\\
+
+\begin{COR}
+Every finite (sufficient condition, not necessary, as said before) hypothesis class is PAC learnable with sample complexity
+\[ m_\mcl{H}(\varepsilon,\delta)\leq\left[ \frac{\log(\abs{\mcl{H}}/\delta)}{\varepsilon} \right] \]
+\end{COR}
+
+The definition of PAC learnability contains two approximation parameters. The accuracy parameter $\varepsilon$
+ determines how far the output classifier can be from the optimal one and a confidence parameter $\delta$ indicating how likely the classifier is tomeet that accuracy requirement.\\
+
+\vspace{0.5cm}
+Now we would like to generalize this model, and we can do it dropping some assumptions we have made before:
+\begin{itemize}
+\item We remove the realizability assumption: it was interesting from a theorical point of view but too strong in many real world applications. Rejecting this means that there exist $h^*\in\mcl{H}$ such that $L_{\mcl{D},f}(h)=0$.
+\item In many application it is not too realistic that the labeling is fully determined by the features we measure; for this reason it is convenient to replace the function $f$ with something more flexible, for example assuming that $\mcl{D}$ is a probability distribution over $\mcl{X}\times\mcl{Y}$ (i.e. the joint distribution over domain points and labels). One can view such a distribution as being composed of two parts: a distribution $\mcl{D}_x$ over unlabeled domain points (\textit{marginal distribution}) and a \textit{conditional} probability over labels for each domain point $D((x,y)|x)$.
+\end{itemize}
+
+\section{The empirical and the true error}
+For a probability distribution $\mcl{D}$ over $\mcl{X}\times\mcl{Y}$ we redefine the true error (or risk) of a prediction rule $h$ to be
+\begin{equation}
+L_\mcl{D}(h) = \mathds{P}_{(x,y)\sim\mcl{D}}[h(x)\neq y] = \mcl{D}([(x,y):h(x)\neq y])
+\label{eq:true_err_D}
+\end{equation}
+
+Note: in the previous definition \ref{eq:err_pred_rule} the request was $[h(x)\neq f(x)]$ but, as we said before, the function $f(x)$ doesn't exist anymore because it was a too strong assumption asking that the labels were fully determined by a single function.\\
+The definition of the empirical risk, instead, remains the same as before
+\[ L_S(h)=\frac{[i\in[m]:h(x_i)\neq y_i]}{m} \]
+and still represent the probability that, for a pair $(x_i,y_i)$ taken uniformily at random training data, the event "$h(x_i)\neq y_i$" holds.
+
+\section{The Bayes optimal predictor}
+Given any probability distribution $\mcl{D}$ over $\mcl{X}\times [0,1]$, the best label predicting function (the one that minimize $L_\mcl{D}(h)$) will be
+\begin{equation}
+f_\mcl{D}(x) = \left\{\begin{aligned} &1\quad \text{if  } \mathds{P}[y=1|x]\geq 1/2\\ &0\quad \text{otherwise}\end{aligned}\right.
+\label{eq:bayes_predictor}
+\end{equation}
+
+It's easy to verify that the predictor $f_\mcl{D}$ is optimal, in the sense that any other classifier $g:\mcl{X}\to [0,1]$, has a lower error, $L_\mcl{D}(f_\mcl{D})\leq L_\mcl{D}(g)$.\\
+This optimal predictor is interensting from a theorical point of view, but unfortunately is not usable in practice because e don't know the distribution $\mcl{D}$ and, consequently $\mathds{P}[y=1|x]$.\\
+
+
+\section{Agnostic PAC Learnability}
+Clearly, we cannot hope that the learning algorithm will find a hypothesis whose error is smaller than the minimal possible error, that of the Bayes predictor. Furthermore, as we shall prove later, once we make no prior assumptions about the data-generating distribution, no algorithm can be guaranteed to find a predictor that is as good as the Bayes optimal one. Instead, we require that the learning algorithm will find a predictor whose error is not much larger than the best possible error of a predictor in some given benchmark hypothesis class. Of course, the strength of such a requirement depends on the choice of that hypothesis class.\\
+\begin{DEF}(\textbf{Agnostic PAC Learnability})\\
+A hypothesis class $\mcl{H}$ is agnostic PAC learnable if there exist a function $m_\mcl{H}:(0,1)^2\to\mathds{N}$ and a learning algorithm such that for every $\delta,\varepsilon\in (0,1)$ and for every distribution $\mcl{D}$ over $\mcl{X}\times\mcl{Y}$, when running the algorithm on $m\geq m_\mcl{H}(\varepsilon,\delta)$ i.i.d. examples generated by $\mcl{D}$ the algorithm returns a hypothesis $h$ such that, with probability $\geq 1-\delta$ (over the choice of the $m$ training examples):
+\[ L_\mcl{D}(h)\leq\min_{h'\in\mcl{H}}L_\mcl{D}(h')+\varepsilon \]
+\label{def:agnostic_PAC_l}
+\end{DEF}
+Notes on the definition:
+\begin{itemize}
+\item The agnostic PAC learning generalizes the definition of PAC learning, in the sense that, if the realizability assumption holds, this new definition provides the same guarantee as the previous one.
+\item The realizability assumption would implies that the quantity $\min_{h'\in\mcl{H}}L_\mcl{D}(h')$, that represents the performance of the best possible classifier (for example the Bayes' one), is always equal to zero.
+\end{itemize}
+Anyway a learner can still declare success if its error is not much larger than the best error achievable by a predictor from the class $\mcl{H}$. This is in contrast to PAC learning, in which the learner is required to achieve a small error in absolute terms and not relative to the best error achievable by the hypothesis class.\\ 
+
+\vspace{0.5cm}
+We now want to extend our model so that it can be applied to a wide variety of learning tasks. Let's consider 3 different possible problems:
+\begin{itemize}
+\item \textit{Binary and Multiclass classification}: our training sample will be a finite sequence of (feature vector,label) pairs, the learner’s output will be a function from the domain set to the label set, and, finally, for our measure of success, we can use the probability, over pairs, of the event that our predictor suggests a wrong label.
+\item \textit{Regression}: in this task, one wishes to find some simple pattern in the data, a function between $\mcl{X}$ and $\mcl{Y}=\mathds{R}$. For the loss function, we can't use the same of the previous case, we need a new one.
+\end{itemize}
+
+\subsection{Generalized loss function}
+Given any set $\mcl{H}$ (that plays the role of our hypotheses, or models) and some domain $Z$ let $\mcl{l}$ be any function from $\mcl{H}\times Z$ to the set of nonnegative real numbers, $\mcl{l}:\mcl{H}\times Z\to\mathds{R}+$. We call such functions loss functions.\\
+We now define the \textbf{risk function} to be the expected loss of a classifier $h\in\mcl{H}$, with respect to a probability distribution $\mcl{D}$ over $Z$, namely:
+\begin{equation}
+L_\mcl{D}(h) = \mathds{E}_{z\sim\mcl{D}}\left[\mcl{l}(h,z)\right]
+\label{eq:risk_func}
+\end{equation}
+Similarly, we define the \textbf{empirical risk} to be the expected loss over a given sample $S=(z_1,\dots,z_m)\in Z^m$, namely:
+\begin{equation}
+L_S(h) = \frac{1}{m}\sum_{i=1}^m\mcl{l}(h,z_i)
+\label{eq:emp_risk}
+\end{equation}
+
+We must keep in mind that the loss always depends on the problem, there isn't a universal one. Sometimes it is useful to create a "personalized" loss function.\\
+Common loss functions:
+\begin{itemize}
+\item \textit{0-1 loss}: commonly use in binary or multiclass classification (obviously is not the only possible solution, is just the simpler and most common one).
+\[ \mcl{l}_{0-1}(h,(x,y))=\left\{\begin{aligned} &0\quad\text{if  }h(x)=y\\ &1\quad\text{if  }h(x)\neq y\end{aligned}\right. \]
+\item \textit{Squared loss L2}: commonly used in regression, penalize few large errors.
+\[ \mcl{l}_{sq}(h,(x,y))=(h(x)-y)^2 \]
+\item \textit{Absolute value loss L1}: commonly used in regression, penalize many small errors:
+\[ \mcl{l}_{abs}(h,(x,y))=\abs{h(x)-y} \]
+\end{itemize}
+
+\begin{EX} The loss function depends on our problem!
+Let's image a machine learning algorithm that verify fingerprints to guarantee the access to something. There are essentially two types of error that the computer can do:
+\begin{itemize}
+\item \textit{False accept}: when accepts an unauthorized user.
+\item \textit{False reject}: when doesn't accept an athorized user.
+\end{itemize}
+If, for example, a supermarket implement the algorithm to give discounts:
+\begin{itemize}
+\item[-] False reject is costly; just the customer gets annoyed.
+\item[-] False accept is minor, the supermarket lose just a discount and the intruder left his fingerprints.
+\end{itemize}
+If, instead, a similar algorithm has been implemented by CIA for the security of a certain area:
+\begin{itemize}
+\item[-] False reject can be tolerade.
+\item[-] False accept is a disaster!
+\end{itemize}
+This example want to show that often the loss function need to be "calibrated" by our knowledge on the problem, to understand which errors are tolerable and which are not.
+\end{EX}
+
+\begin{DEF} (\textbf{Agnostic PAC Learnability for General Loss Functions})\\
+Recalling the definition \ref{def:agnostic_PAC_l}, for which the hypothesis generate by the algorithm (with probability $\geq 1-\delta$ over the training set) has a true error
+\[ L_\mcl{D}(h)\leq\min_{h'\in\mcl{H}}L_\mcl{D}(h')+\varepsilon \]
+we can implement the definition we have written for the loss function deducing that:
+\[ L_\mcl{D}(h) = \mathds{E}_{z\sim\mcl{D}}\left[\mcl{l}(h,z)\right] \]
+\end{DEF}
 
 
 
