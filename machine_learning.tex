@@ -12,6 +12,7 @@
 \theoremstyle{plain}
 \newtheorem{THEO}{Theorem}
 \newtheorem{DEF}{Definition}
+\newtheorem{PROP}{Proposition}
 \newtheorem{LEM}{Lemma}
 \newtheorem{EX}{Example}
 \newtheorem{COR}{Corollary}
@@ -89,7 +90,8 @@ If, because of the true error can't be computed, we would like to try another es
 \label{eq:train_err}
 \end{equation}
 This division is simply the rate o correct prediction and the total samples (assuming classification problem and 0-1 loss), and it is also called \textit{empirical error} or \textit{empirical risk}.\\
-This learning paradigm, which main goal is to find a predictor $h$ that minimize $\ell_S$, is called \textit{Empirical Risk Minimization} or ERM, for short.\\
+This learning paradigm, which main goal is to find a predictor $h$ that minimize $\ell_S$, is called \textit{Empirical Risk Minimization} or \\
+, for short.\\
 
 \vspace{0.5cm}
 Although the ERM rule seems very natural, without being careful this approach may fail miserabily.\\
@@ -135,7 +137,8 @@ Then, for any $f$ and any $\mcl{D}$ for which the realizability assumption holds
 \[ L_{\mcl{D},f}(h_S)\leq\varepsilon \] 
 \end{THEO}
 \begin{proof}
-robe
+RICORDARSI DI FARLA
+%%%%%%%%%%%%
 \end{proof}
 
 This theorem tell us that, for a sufficiently large $m$, the $ERM_\mcl{H}$ rule over a finite hypothesis class will be \textit{probably} (with confidence $1-\delta$) \textit{approximately} (up to an error of $\varepsilon$) correct.\\
@@ -283,23 +286,54 @@ we can implement the definition we have written for the loss function deducing t
 
 Recall that, given a hypothesis class $\mcl{H}$, the ERM learning paradigm works as follow: upon receiving a training sample S, the learner evaluates the error of each $h\in\mcl{H}$ on the given sample and outputs a member of the class that minimizes this empirical risk. The hope is that an $h$ that minimizes the empirical risk with respect to S is a risk minimizer with respect to the true data probability distribution aswell. For this reason we want that the empirical error is a good approximation of the true error for all the solutions, and not only for the best one ($L_S(h)$ is similar to $L_\mcl{D}(h)$, $\forall\, h$).\\
 \begin{DEF} (\bm{$\varepsilon$}\textbf{-representative})\\
-A training set S is called $\varepsilon$-representative (with respect to domain Z, hypothesis class $\mcl{H}$, loss function $\mcl{l}$ and distribution $\mcl{D}$) if 
+A training set S is called $\varepsilon$-representative (with respect to domain Z, hypothesis class $\mcl{H}$, loss function $\ell$ and distribution $\mcl{D}$) if 
 \[ \forall h\in\mcl{H} \quad \abs{L_S(h)-L_D(h)}\leq\varepsilon \]
 \end{DEF}  
 
 This is a stronger request than previous ones because we do not more focus on the best hypothesis of the class.\\
 
- 
+\begin{THEO}
+	Assume that the training set $S$ is $\frac{\varepsilon}{2}$-representative. Then, any output of $ERM_\mcl{H}(S)$ (i.e. any $h_S\,\in\,\underset{h\in\mcl{H}}{argmin}\, L_S(h)$) satisfies:
+	\[ L_\mcl{D}(h_S)\leq\min_{h\in\mcl{H}} L_\mcl{D}(h)+\varepsilon  \]
+\end{THEO} 
+\begin{proof}
+	For every $h\in\mcl{H},$
+	\[ L_\mcl{D}(h_S)\leq L_S(h_S)+\frac{\varepsilon}{2}\leq L_\mcl{D}(h)+\frac{\varepsilon}{2}+\frac{\varepsilon}{2} = L_\mcl{D}(h) + \varepsilon\]
+	where the first and the third inequalities are due to the assumption that $S$ is $\frac{\varepsilon}{2}$- and the second inequality holds since $h_S$ is an ERM predictor. 
+\end{proof}
 
+The relation guarantee by the theorem is exactly the one required by the definition of agnostic PAC learnability: in fact, the consequence of this statement is that if, with probability at least $1-\delta$, a random training set $S$ is $\varepsilon$-representative, then the ERM rule is an agnostic PAC learner.
 
+\begin{DEF} (\textbf{Uniform Convergence})\\
+	A hypothesis class $\mcl{H}$ has the uniform (same $m$ for all $h$ and all $\mcl{D}$) convergence property (with respect to a domain $Z$ and a loss function $\ell$) if there exists a function $m_\mcl{H}^{UC}:(0,1)^2\to\mathds{N}$ such that for every $\varepsilon,\delta\in(0,1)$ and for every probability distribution $\mcl{D}$ over $Z$, if $S$ is a sample of $m\geq m_\mcl{H}^{UC}(\varepsilon,\delta)$ i.i.d. examples drawn from $\mcl{D}$, then with probability $\geq 1-\delta$, $S$ is $\varepsilon$-representative.
+\end{DEF} 
 
+This means that the function $m_\mcl{H}^{UC}$ measures the (minimal) sample complexity of obtaining the uniform convergence property, namely, how many examples we need to ensure that with probability at least $1-\delta$ the sample would be $\varepsilon$-representative.
 
+\begin{PROP}
+	If a class $\mcl{H}$ has the uniform convergence property with a function $m_\mcl{H}^{UC}$ then the class is agnostically PAC learnable with the sample complexity $m_\mcl{H}(\varepsilon,\delta)\leq m_\mcl{H}^{UC}(\varepsilon/2,\delta)$. Furthermore, in that case the $ERM_\mcl{H}$ paradigm is a successful agnostic PAC learner for $\mcl{H}$.	
+\end{PROP}
 
+\begin{PROP}
+	Let $\mcl{H}$ be a finite hypothesis class, let $Z$ be a domain, and let $\ell:\mcl{H}\times Z\to[0,1]$ be a loss function. Then:
+	\begin{itemize}
+		\item $\mcl{H}$ enjoys the uniform convergence property with sample complexity 
+		\[ m_\mcl{H}^{UC}(\varepsilon,\delta)\leq\left[\frac{\log(2\abs{\mcl{H}}/\delta)}{2\varepsilon^2}\right] \]
+	\item $\mcl{H}$ is agnostically PAC learnable using the ERM algorithm with sample complexity
+	\[ m_\mcl{H}(\varepsilon,\delta)\leq m_\mcl{H}^{UC}(\varepsilon/2,\delta)\leq\left[\frac{2\log(2\abs{\mcl{H}}/\delta)}{\varepsilon^2}\right] \]
+	\end{itemize}
+\end{PROP}
+\begin{proof}
+	RICORDARSI DI FARE PURE QUESTA 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{proof}
 
-
-
-
-
+\subsection{The Discretization Trick}
+While the previous theorem only applies on finite hypothesis classes, there is a simple trick that allow us to get a very good estimate of the practical sample complexity of infinite hypothesis classes. In many real world application, in fact, we consider classes determined by a set of parameters in $\mathds{R}$.\\
+The solution arises when we use computers. Using a pc, in fact, we will probably maintain real numbers using floating point representation, say, of 64 bits. It follows that, in practice, our hypothesis class is parameterized by the set of scalar that can be represented using a 64 bits floating point number. There are at most $2^{64}$ such numbers; hence the actual size of our hypothesis class is at most $2^{64}$. More generally, if our hypothesis class is parameterized by $d$ numbers, in practice we learn an hypothesis class of size at most $2^{64d}$.\\
+Applying the proposition, we obtain that the sample complexity of such classes is bounded by
+\[ m_\mcl{H}(\varepsilon,\delta)\leq m_\mcl{H}^{UC}(\varepsilon/2,\delta)\leq \frac{2\log\left(2\frac{2^{64d}}{\delta}\right)}{\varepsilon^2} \] 
+This upper bound on the sample complexity has the deficiency of being dependent on the specific representation of real numbers used by our machine.
 
 
 
