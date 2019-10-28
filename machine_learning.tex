@@ -7,6 +7,7 @@
 \usepackage{amsthm}
 \usepackage{dsfont} % for the R of real
 \usepackage{physics}
+\usepackage{bm} % for a textbf in math mode
 
 \theoremstyle{plain}
 \newtheorem{THEO}{Theorem}
@@ -81,7 +82,7 @@ It is important to understand that the algorithm doesn't know the probability di
 
 \section{Empirical Risk Minimization}
 
-As mentioned earlier, a learning algorithm receives as input a training set $S$, sampled from an unknown distribution $\mcl{D}$ and labeled by some target function $f$,and should output a predictor $h_S:\mcl{X}\to\mcl{y}$ (the subscript $S$ emphasizes the fact that the output predictor depends on the training set). The goal of the algorithm is to find $h_S$ that minimizes the error with respect to the unknown $\mcl{D}$ and $f$.\\
+As mentioned earlier, a learning algorithm receives as input a training set $S$, sampled from an unknown distribution $\mcl{D}$ and labeled by some target function $f$, and should output a predictor $h_S:\mcl{X}\to\mcl{Y}$ (the subscript $S$ emphasizes the fact that the output predictor depends on the training set). The goal of the algorithm is to find $h_S$ that minimizes the error with respect to the unknown $\mcl{D}$ and $f$.\\
 If, because of the true error can't be computed, we would like to try another estimate of it, we should define the error on the training data, called \textbf{training error}:
 \begin{equation}
 \ell_S(h) = \frac{\abs{i:h(x_i)\neq y_i , i=1,\dots ,m}}{m}
@@ -92,9 +93,15 @@ This learning paradigm, which main goal is to find a predictor $h$ that minimize
 
 \vspace{0.5cm}
 Although the ERM rule seems very natural, without being careful this approach may fail miserabily.\\
-Let's consider, for example, the sample in figure \ref{fig:ex_erm_1}, assuming a probability distribution $\mcl{D}$ for which instances $x$ are taken uniformily at random in the square, and the labelling function $f$ that assign the value 1 to the instances in the upper squares, and 0 to the others (essentially 0 to blue ones and 1 to red ones). If we collect the training set shown in figure \ref{fig:ex_err_2}, to train the ML algorithm, a good predictor seems to be the function $h_S(x) = \left\{\begin{aligned} &0 \text{ if x in left side}\\ &1 \text{ if x in right side}\end{aligned}\right.$, that effectively minimize the training loss ($L_S(h_S) =0$, practically perfect). But is this a good predictor?
+Let's consider, for example, the sample in figure \ref{fig:overfit} (on the left), assuming a probability distribution $\mcl{D}$ for which instances $x$ are taken uniformily at random in the square, and the labelling function $f$ that assign the value 1 to the instances in the upper squares, and 0 to the others (essentially 0 to blue ones and 1 to red ones). If we collect the training set shown in figure \ref{fig:overfit} (on the right), to train the ML algorithm, a good predictor seems to be the function $h_S(x) = \left\{\begin{aligned} &0 \text{ if x in left side}\\ &1 \text{ if x in right side}\end{aligned}\right.$, that effectively minimize the training loss ($L_S(h_S) =0$, practically perfect). But is this a good predictor?
 
-% figures
+\begin{figure}[hbtp]
+\centering
+\includegraphics[scale=1.5]{images/overfit_ex_1.pdf}\qquad\qquad
+\includegraphics[scale=1.5]{images/overfit_ex_2.pdf}
+\caption{Example of overfitting}
+\label{fig:overfit}
+\end{figure}
 
 On the other hand, the true error of any classifier is, in this case $L_\mcl{D}(h_S) = \frac{1}{2}$.\\
 We have found a predictor whose performance on the training set is excellent, yet its performance on the true “world” is very poor. This phenomenon is called overfitting. Intuitively, overfitting occurs when our hypothesis fits the training data “too well”, but doesn't have the same performances on a generic dataset. We obviously want to avoid this overfitting, because algorithms should work in general cases. Overfitting is less probable when the training set is large. The bigger is a training set, the smaller will be the probability to have regular distribution of data.\\
@@ -104,13 +111,13 @@ We have found a predictor whose performance on the training set is excellent, ye
 Rather than giving up completely the ERM paradigm, we want to look at the conditions under which it is guarantee that ERM does not overfit.\\
 A common solution is to apply the ERM learning rule over a restricted search space. Formally, the learner should choose in advance (before seeing the data) a set of predictors. This set is called a \textbf{hypothesis class} and is denoted by $\mcl{H}$. Each $h\in\mcl{H}$ is a function mapping from $\mcl{X}$ to $\mcl{Y}$. For a given class $\mcl{H}$, and a training sample, $S$, the $ERM_\mcl{H}$ learner uses the ERM rule to choose a predictor $h$, with the lowest possible error over $S$:
 \begin{equation}
-ERM_\mcl{H} \in argmin L_S(h)
+ERM_\mcl{H} \in \underset{h\in\mcl{H`}}{argmin}\, L_S(h)
 \label{eq:ERMH}
 \end{equation}
 where $argmin$ stands for the set of hypotheses in $\mcl{H}$ that achieve the minimum value of $L_S(h)$.\\
 Since the choice of such a restriction is determined before the learner sees the training data, it should ideally be based on some prior knowledge about the problem to be learned. Intuitively, choosing a more restricted hypothesis class better protects us against overfitting but at the same time might cause us a stronger inductive bias: if the class is too small you will not find a good estimator.\\
 Now we would like to prove that, if $\mcl{H}$ is a finite class $ERM_\mcl{H}$ is guarantee not to overfit, provided it is based on a sufficiently large training sample (depending on the size of $\mcl{H}$). Limiting the dimension of $\mcl{H}$ ($\abs{\mcl{H}} < \infty$) seems not to be very realistic, because we usually have to deal with parameters defined in $\mathds{R}^d$: the correct assumption uses the finite precision with which computers manage real numbers.\\
-Let us now analyze the performance of the $ERM_\mcl{H}$ learning rule assuming that $\mcl{H}$ is a finite class. For a training sample, $S$, labeled according to some $f:\mcl{X}\to\mcl{Y}$, let $h_S$ denote a result of applying $ERM_\mcl{H}$ to $S$, i.e. $h_s\in argmin L_S(h)$. Let's make some assumptions:
+Let us now analyze the performance of the $ERM_\mcl{H}$ learning rule assuming that $\mcl{H}$ is a finite class. For a training sample, $S$, labeled according to some $f:\mcl{X}\to\mcl{Y}$, let $h_S$ denote a result of applying $ERM_\mcl{H}$ to $S$, i.e. $h_s\in \underset{h\in\mcl{H}}{argmin}\, L_S(h)$. Let's make some assumptions:
 \begin{itemize}
 \item (\textbf{Realizability}) There exist a $h^*\in\mcl{H}$ such that $L_\mcl{D}(h^*)=0$: in practice we are asking for the existance of the perfect solution in our hypothesis class. Note that this assumption implies that with probability 1 over random samples, we have $L_S(h^*)=0$.
 \item (\textbf{i.i.d.}) The examples in the training set are indipendently and identically distributed (i.i.d.) according to the distribution $\mcl{D}$ and than labelled according the labeling function $f$. We denote this assumption by $S\sim\mcl{D}^m$ (this notation represents the fact that we sample $m$ times according to the distribution $\mcl{D}$). This assumption seems to be unrealistic too: the sampling is usually biased on the situation; you will never be able to sample reproducing the real distribution and leave them indipendent between each other. Anyway, the larger the sample get, the more likely it is to reflect more accurately the distribution ad labelig used to generate it.
@@ -141,7 +148,7 @@ Notes on the theorem:
 
 \begin{figure}
 \centering
-%\includegraphics{}
+\includegraphics[scale=1.5]{images/misleading_samples.pdf}
 \caption{Each point in the large circle represents a possible m-tuple of instances. Each colored oval represents the set of “misleading” m-tuple of instances for some “bad” predictor $h\in\mcl{H}_B$. The $ERM$ can potentially overfit whenever it gets a misleading training set S. That is, for some $h\in\mcl{H}_B$ we have $L_S(h)=0$. The disequations found in the demostration of the theorem guarantee that for each individual bad hypothesis, $h\in\mcl{H}_B$, atmost $(1-\varepsilon)^m$-fraction of the training sets would be misleading. In particular, the larger $m$ is, the smaller each of these colored ovals becomes. The union bound formalizes the fact that the area representing the training sets that are misleading with respect to some $h\in\mcl{H}_B$ (that is, the training sets in M) is atmostthe sum of the areas of the colored ovals. Therefore, it is bounded by $\mcl{H}_B$ times the maximum size of a colored oval. Any sample S outside the colored ovals cannot cause the $ERM$ rule to overfit.}
 \end{figure}
 
@@ -272,11 +279,17 @@ we can implement the definition we have written for the loss function deducing t
 \end{DEF}
 
 
+\chapter{Learning from Uniform Convergence}
 
+Recall that, given a hypothesis class $\mcl{H}$, the ERM learning paradigm works as follow: upon receiving a training sample S, the learner evaluates the error of each $h\in\mcl{H}$ on the given sample and outputs a member of the class that minimizes this empirical risk. The hope is that an $h$ that minimizes the empirical risk with respect to S is a risk minimizer with respect to the true data probability distribution aswell. For this reason we want that the empirical error is a good approximation of the true error for all the solutions, and not only for the best one ($L_S(h)$ is similar to $L_\mcl{D}(h)$, $\forall\, h$).\\
+\begin{DEF} (\bm{$\varepsilon$}\textbf{-representative})\\
+A training set S is called $\varepsilon$-representative (with respect to domain Z, hypothesis class $\mcl{H}$, loss function $\mcl{l}$ and distribution $\mcl{D}$) if 
+\[ \forall h\in\mcl{H} \quad \abs{L_S(h)-L_D(h)}\leq\varepsilon \]
+\end{DEF}  
 
+This is a stronger request than previous ones because we do not more focus on the best hypothesis of the class.\\
 
-
-
+ 
 
 
 
