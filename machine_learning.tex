@@ -406,6 +406,39 @@ To summarize the procedure of training a ML algorithm parametrized by some Hyper
 \end{itemize}
 
 
+\chapter{Linear Predictors}
+
+\chapter{VC Dimension}
+We have seen, in the previous chapters, that a finite class ($\abs{\mcl{H}}<\infty$) is agnostic PAC learnable. What about infinite classes? We would like to understand when infinite classes are learnable and also the number of samples that we need to work with.\\ To show that the size of the hypothesis class is not the right characterization of its sample complexity, we first present a simple example of an infinite-size hypothesis class that is learnable.\\
+
+\begin{EX}
+	Let $\mcl{H}$ be the set of \textit{threshold functions} over the real line, namely $\mcl{H}=\left\{h_a:a\in\mathds{R}\right\}$ where $h_a:\mathds{R}\to\left\{0,1\right\}$ is a function such that $\left\{\begin{aligned}&1\quad\text{if}\quad x<a\\&0\quad\text{otherwise}\end{aligned}\right.$.\\
+	Clearly, $\mcl{H}$ is of infinite size, but we can show that $\mcl{H}$ is PAC learnable, using the ERM rule, with sample complexity $m_\mcl{H}(\varepsilon,\delta)\leq\left[\log(2/\delta)/\varepsilon\right]$.
+	
+	\begin{proof}
+		AGGIUNGERE PURE QUESTA DIMOSTRAZIONE
+	\end{proof}
+\end{EX}
+
+We see, therefore, that while finiteness of $\mcl{H}$ is a sufficient condition for learnability, it is not a necessary condition.\\
+Before giving the next definitions, let us recall the No Free Lunch theorem and its proof: we have shown that without restricting the hypothesis class, for any learning algorithm, an adversary can construct a distribution for which the learning algorithm will perform poorly, while there is another learning algorithm that will succeed on the same distribution. To proove that, the idea was to select a distribution concentrated on a set C (so a restriction) on which the algorithm fails. Since we are considering distributions that are concentrated on elements of C, we should study $\mcl{H}$ behaves on C.
+\begin{DEF}(\textbf{Restriction of $\mcl{H}$ to C})\\
+	Let $\mcl{H}$ be a class of functions from $\mcl{X}$ to $\left\{0,1\right\}$ and let $C=\left\{c_1,\dots ,c_m\right\}\subset\mcl{X}$. The restriction $\mcl{H}_C$ of $\mcl{H}$ to C is:
+	\[ \mcl{H}_C=\left\{\left[h(c_1),\dots ,h(c_m)\right] :h\in\mcl{H}\right\} \]
+	where we represent each function from C to $\left\{0,1\right\}$ as a vector in $\left\{0,1\right\}^\abs{C}$.
+\end{DEF}
+If the restriction of $\mcl{H}$ in C is the set of all functions from C to $\left\{0,1\right\}$, then we say that $\mcl{H}$ \textit{shatters} the set C. Formally
+\begin{DEF}(\textbf{Shattering})\\
+	A hypothesis class $\mcl{H}$ shatters a finite set $C\subset\mcl{X}$ if the restriction of $\mcl{H}$ to C is the set of all functions from C to $\left\{0,1\right\}$, that is $\abs{\mcl{H}_C} =2^\abs{C}$.
+\end{DEF}
+Getting back to the construction of an adversarial distribution as in the proof of the No-Free-Lunch theorem, we see that whenever some set C is shattered by $\mcl{H}$, the adversary is not restricted by $\mcl{H}$, as they can construct a distribution over C based on any target function from C to $\left\{0,1\right\}$, while still maintaining the realizability assumption. This immediately yields:
+\begin{COR}
+	Let $\mcl{H}$ be a hypothesis class of functions from $\mcl{X}$ to $\left\{0,1\right\}$. Let $m$ be a training set size. Assume that there exist a set $C\subset\mcl{X}$ of size $2m$ that is shattered by $\mcl{H}$. Then for any learning algorithm A there exist a distribution $\mcl{D}$ over $\mcl{X}\times\left\{0,1\right\}$ and a predictor $h\in\mcl{H}$ such that $L_d(h)=0$ but with probability at least 1/7 over the choice of S we have that $L_\mcl{D}(A(S))\geq 1/8$.
+\end{COR}
+This corollary tells us that if $\mcl{H}$ shatters some set C of size $2m$ then we cannot learn $\mcl{H}$ using $m$ examples.
+\begin{DEF}(\textbf{VC-dimension})\\
+	The VC-dimension of an hypothesis class $\mcl{H}$, denoted $VCdim(\mcl{H})$, is the maxiamal size of a set $C\subset\mcl{X}$ that can be shattered by $\mcl{H}$. If $\mcl{H}$ can shatter sets of arbitrarily large size we say that $\mcl{H}$ has infinite VC-dimension.
+\end{DEF}
 
 
 
