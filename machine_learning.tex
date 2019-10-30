@@ -336,6 +336,75 @@ Applying the proposition, we obtain that the sample complexity of such classes i
 This upper bound on the sample complexity has the deficiency of being dependent on the specific representation of real numbers used by our machine.
 
 
+\chapter{The Bias-Complexity Trade-Off}
+In one of the previous chapters we saw that, unless one is careful, the training data can mislead the learner, and result in overfitting. To overcome this problem, we restricted the search space to some hypothesis class $\mcl{H}$. Such an hypothesis class can be viewed as reflecting some prior knowledge that the learner has about the task – a belief that one of the members of the class $\mcl{H}$ is a low-error model for the task.\\
+Our main objective was, given a training set $S$ and a loss function, to find a function $\hat{h}$ for which the error $L_\mcl{D}(\hat{h})$ is small (that brought to the definition of Agnostic PAC learnability (\ref{def:agnostic_PAC_l})). For this reason we needed a large hypothesis class to contain the best solution, but at the same time a good algorithm to find it.\\
+But, is there some kind of universal learner, that is, a learner who has no prior knowledge about a certain task and is ready to be challenged by any task, that predicts the best $\hat{h}$ for any distribution $\mcl{D}$?\\
+So, what about using the set of \textit{all} the functions from $\mcl{X}$ to $\mcl{Y}$ as the hypothesis class? With this assumption we would be sure that the solution (if the problem is solvable) is inside the class.\\
+
+\begin{THEO} (\textbf{No-Free Lunch})\\
+	Let $A$ be a learning algorithm for the task of binary classification with respect to the 0-1 loss over a domain $\mcl{X}$. Let $m$ be any number smaller than $\abs{\mcl{X}}/2$, representing a training set size. Then, there exists a distribution $\mcl{D}$ over $\mcl{X}\times\left\{0,1\right\}$ such that:
+	\begin{itemize}
+		\item there exists a function $f:\mcl{X}\to\left\{0,1\right\}$ with $L_\mcl{D}(f)=0$ (so a perfect solution with 0 loss)
+		\item with probability of at least $1/7$ over the choice $S\sim\mcl{D}^m$ we have that $L_\mcl{D}(A(S))\geq 1/8$.
+	\end{itemize}
+\end{THEO} 
+This means that there isn't a universal learner: the algorithm can fail even if there is a perfect solution for the training set. In fact, the theorem guarantees the existance of this perfect solution (with 0 loss), but doesn't guarantee a good performance instead.\\
+The key message is that for every ML algorithm there exist a task on which it fails even if another ML algorithm is able to solve it.\\
+
+\vspace{0.3cm}
+\textit{Idea of the proof}: our training set is smaller than half of the domain. This means that we have no information on what happens on the other half, but we can suppose that there is some target function f that works on the other half in a way that contradicts our estimated labels.\\
+
+\vspace{0.5cm}
+Let's consider an ERM predictor over the hypothesis class of all the functions $f:\mcl{X}\to\left\{0,1\right\}$. This class represent a lack of knowledge: every possible function is considered a good candidate. According to the previous theorem, any algorithm that chooses its output from an hypothesis belonging to that class, and in particular the ERM predictor, will fail on some learning task. Therefore, the class is not PAC learnable, as formalized in the following corollary.\\
+\begin{COR}
+	Let $\mcl{X}$ be an infinite domain set and let $\mcl{H}$ be the set of all the functions from $\mcl{X}$ to $\left\{0,1\right\}$. Then, $\mcl{H}$ is not PAC learnable.
+\end{COR}
+
+\begin{proof}
+	Let's assume, by way of contradiction, that the class is learnable and let's choose some $\varepsilon <1/8$ and $\delta <1/7$. By the definition of PAC learnability (\ref{def:PAC_learn}), it exists an algorithm $A$ and an integer $m=m(\varepsilon,\delta)$, such that for any data-generating distribution over $\mcl{X}\times\left\{0,1\right\}$, if for some function $f$ in that domain, $L_\mcl{D}(f)=0$, then with probability $\geq 1-\delta$ when $A$ is applied to samples $S$ of size $m$, generated i.i.d. by $\mcl{D}$, $L_\mcl{D}(A(S))\leq\varepsilon$.\\
+	However, applying the Free-Lunch theorem, since $\abs{\mcl{X}}>2m$, for every learning algorithm (and in particular for $A$), there exists a distribution $\mcl{D}$ such that with probability greater than $1/7 >\delta$, $L_\mcl{D}(A(S)) >1/8 >\varepsilon$, which leads to the desired contradiction.
+\end{proof}
+
+But how can we prevent such failures? We should, for example, use our knowledge on a specific learning task to avoid distributions that will cause us to fail.\\
+But how should we choose a good hypothesis class? On the other hand we want to believe that this class includes the hypothesis that has no error at all (in the PAC setting), or at least that the smallest error achievable by a hypothesis from this class is indeed rather small (in the agnostic setting). On the other hand, we have just seen that we cannot simply choose the richest class i.e. the class of all functions over the given domain.\\
+\begin{itemize}
+	\item If we choose a \textit{small} $\mcl{H}$ we will deal with \textit{low approximation capabilities} (large $L_S$) but \textit{good generalization properties} ($L_\mcl{D}\sim L_S$). So the approximation found will work similarly on real data as on the training set, but it's not guarantee that the best hypothesis is in the class.
+	\item If we choose a \textit{large} $\mcl{H}$, instead, we will have \textit{good approximation capabilities} (small $L_S$) but there is a bigger \textit{risk of overfitting} ($L_\mcl{D}\gg L_S$). Moreover the no free lunch theorem suggests to not have too larger hypothesis classes.
+\end{itemize}
+
+\section{Error Decomposition}
+To answer these questions we decompose the true error of an $ERM_\mcl{H}$ predictor, $h_S$ into two components, as follows:
+\[ L_\mcl{D}(h_S)=\varepsilon_{app}+\varepsilon_{est} \]
+
+\begin{itemize}
+	\item \textbf{Approximation error}
+	\[ \varepsilon_{app}=\min_{h\in\mcl{H}} L_\mcl{D}(h) \]
+	It is the minimum risk achievable by a predictor in the hypothesis class. It does not depend on the training set, or on the sample size, but only on the choice of the class. Enlarging the hypothesis class can decrease the approximation error. Under the realizability assumption, this error is zero.
+	\item \textbf{Estimation error}
+	\[ \varepsilon_{est} = L_\mcl{D}(h_S) - \min_{h\in\mcl{H}}(h) \]
+	It is the difference between the approximation error and the error achieved by the ERM predictor. The estimation error results because the training error is only an estimate of the true risk, and so the predictor minimizing the empirical risk is only an estimate of the predictor minimizing the true risk. This type of error depends on the training set size and on the size, or complexity, of the hypothesis class. For a finite class, the estimation error increases (logarithmically) with $\abs{\mcl{H}}$ and decreases with $m$ (so the training error becomes a good estimate of the true error).
+\end{itemize}
+
+The following pictures schematized what we just said regarding the two types of error.
+
+%INSERIRE IMMAGINE ERROR DECOMPOSITION (2)
+
+Since our goal is to minimize the total risk, we face a \textit{tradeoff}, called the \textbf{bias complexity tradeoff}. On one hand, choosing $\mcl{H}$ to be a very rich class decreases the approximation error but at the same time might increase the estimation error, as a rich $\mcl{H}$ might lead to \textit{overfitting}. On the other hand, choosing $\mcl{H}$ to be a very small set reduces the estimation error but might increase the approximation error or, in other words, might lead to \textit{underfitting}.\\
+The differences between overfitting and underfitting can be seen in picture \ref{fig:under_over_fit}.\\
+
+\vspace{0.5cm}
+We need to estimate the generalization error $L_\mcl{D}(h)$ for a function h (the one selected with ERM). To do this, we use a \textit{test set}, a new set of samples different (disjoint) from the training set used to pick h. Sometimes we use also a \textit{validation set} for selecting the hyper-parameters of the algorithm or to evaluate errors while iterative training procedures are running.\\
+To summarize the procedure of training a ML algorithm parametrized by some Hyper-Parameters (HP):
+\begin{itemize}
+	\item[1.] Select Hyper-Parameters values
+	\item[2.] Train the algorithm with the choosen parameters on the training set
+	\item[3.] Evaluate performances on the validation set
+	\item[4.] Go back to 1. and select new HP values
+	\item[5.] Select the final HP leading to the smallest validation error
+	\item[6.] Compute error estimation on the test set  
+\end{itemize}
+
 
 
 
