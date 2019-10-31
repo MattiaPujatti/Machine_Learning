@@ -388,10 +388,22 @@ To answer these questions we decompose the true error of an $ERM_\mcl{H}$ predic
 
 The following pictures schematized what we just said regarding the two types of error.
 
-%INSERIRE IMMAGINE ERROR DECOMPOSITION (2)
+\begin{figure}[!h]
+	\centering
+	\includegraphics[scale=0.5]{images/error_decomposition.pdf}
+	\caption{Error decomposition}
+	\label{fig:err_dec}
+\end{figure}
 
 Since our goal is to minimize the total risk, we face a \textit{tradeoff}, called the \textbf{bias complexity tradeoff}. On one hand, choosing $\mcl{H}$ to be a very rich class decreases the approximation error but at the same time might increase the estimation error, as a rich $\mcl{H}$ might lead to \textit{overfitting}. On the other hand, choosing $\mcl{H}$ to be a very small set reduces the estimation error but might increase the approximation error or, in other words, might lead to \textit{underfitting}.\\
 The differences between overfitting and underfitting can be seen in picture \ref{fig:under_over_fit}.\\
+
+\begin{figure}[!h]
+	\centering
+	\includegraphics[scale=0.7]{images/over_under_fitting.pdf}
+	\caption{Comparison between underfitting and overtitting}
+	\label{fig:under_over_fit}
+\end{figure}
 
 \vspace{0.5cm}
 We need to estimate the generalization error $L_\mcl{D}(h)$ for a function h (the one selected with ERM). To do this, we use a \textit{test set}, a new set of samples different (disjoint) from the training set used to pick h. Sometimes we use also a \textit{validation set} for selecting the hyper-parameters of the algorithm or to evaluate errors while iterative training procedures are running.\\
@@ -439,6 +451,23 @@ This corollary tells us that if $\mcl{H}$ shatters some set C of size $2m$ then 
 \begin{DEF}(\textbf{VC-dimension})\\
 	The VC-dimension of an hypothesis class $\mcl{H}$, denoted $VCdim(\mcl{H})$, is the maxiamal size of a set $C\subset\mcl{X}$ that can be shattered by $\mcl{H}$. If $\mcl{H}$ can shatter sets of arbitrarily large size we say that $\mcl{H}$ has infinite VC-dimension.
 \end{DEF}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
