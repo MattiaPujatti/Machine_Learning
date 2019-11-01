@@ -90,8 +90,7 @@ If, because of the true error can't be computed, we would like to try another es
 \label{eq:train_err}
 \end{equation}
 This division is simply the rate o correct prediction and the total samples (assuming classification problem and 0-1 loss), and it is also called \textit{empirical error} or \textit{empirical risk}.\\
-This learning paradigm, which main goal is to find a predictor $h$ that minimize $\ell_S$, is called \textit{Empirical Risk Minimization} or \\
-, for short.\\
+This learning paradigm, which main goal is to find a predictor $h$ that minimize $\ell_S$, is called \textit{Empirical Risk Minimization} or ERM, for short.\\
 
 \vspace{0.5cm}
 Although the ERM rule seems very natural, without being careful this approach may fail miserabily.\\
@@ -137,8 +136,14 @@ Then, for any $f$ and any $\mcl{D}$ for which the realizability assumption holds
 \[ L_{\mcl{D},f}(h_S)\leq\varepsilon \] 
 \end{THEO}
 \begin{proof}
-RICORDARSI DI FARLA
-%%%%%%%%%%%%
+	Denote with $P_{good}$ the probability to find a "good" $h_S$, such that $L_{\mcl{D},f}(h_S)\leq\varepsilon$. We want to probe that $P_{good}\geq 1-\delta$, which is equivalent to have a probability $P_{bad}\leq\delta$ (with $P_{bad}=1-P_{good}$). The idea is to consider the set of all the possible m-dimensional training samples: into this set there are some samples that are "misleading", meaning that they result in a $L_{\mcl{D},f}(h_S)\geq\varepsilon$, while the other lead to $L_{\mcl{D},f}(h_S)\leq\varepsilon$ that we want. The essence of the proof relies in finding a bound on these "misleading samples" size.\\
+	Formally, let $S|_x=(x_1,\dots,x_m)$ be the instances of the training set. We would like to upper bound the probability to sample from $\mcl{D}$ a m-tuple which leads to a generalization error bigger than $\varepsilon$:
+	\[ P_{bad}=\mcl{D}^m(\left\{S|_x:L_{\mcl{D},f}(h_S)>\varepsilon\right\}) \]  
+	Then, the set of "bad" hypothesis is
+	\[ \mcl{H}_B=\left\{h\in\mcl{H}:L_{\mcl{D},f}(h)>\varepsilon\right\} \]
+	The set of "misleading samples", that contains all the m-tuples which lead to a bad hypothesis after applying the ERM algorithm is:
+	\[ M=\left\{S|_x:\exists h\in\mcl{H}_B,L_S(h)=0 \right\} \]
+	Namely, for every $S|_x\in M$, there is a "bad" hypothesis, $h\in\mcl{H}_B$, that looks like a "good" hypothesis on $S|_x$.
 \end{proof}
 
 This theorem tell us that, for a sufficiently large $m$, the $ERM_\mcl{H}$ rule over a finite hypothesis class will be \textit{probably} (with confidence $1-\delta$) \textit{approximately} (up to an error of $\varepsilon$) correct.\\
