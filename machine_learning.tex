@@ -473,12 +473,31 @@ Notice that:
 
 To show that $VCdim(\mcl{H})=d$ we need to show that:
 \begin{itemize}
-	\item[1.] $VCdim(\mcl{H})\geq d$: there exists a set $C$ of size $d$ that is not shattered by $\mcl{H}$.
+	\item[1.] $VCdim(\mcl{H})\geq d$: there exists a set $C$ of size $d$ that is shattered by $\mcl{H}$.
 	\item[2.] $VCdim(\mcl{H})\leq (d+1)$: every set $C$ of size $d+1$ is not shattered by $\mcl{H}$.
 \end{itemize}
 
-\begin{EX} (Threshold functions)
+\begin{EX} (Threshold functions)\\
+	Let $\mcl{H}$ be the class of threshold functions over $\mathds{R}$. Take a set $C=\left\{c_1\right\}$. Now, if we take $a=c_1+1$, then we have $h_a(c_1)=1$, and if we take $a=c_1-1$, then we have $h_a(c_1)=0$. Therefore, $\mcl{H}_C$ is the set of all the functions from $C$ to $\left\{0,1\right\}$, and $\mcl{H}$ shatters $C$. Now let's take a set $C=\left\{c_1,c_2\right\}$, where $c_1\leq c_2$. No $h\in\mcl{H}$ can account for the labeling $(0,1)$, because any threshold that assign the label 0 to $c_1$ must assign the label 0 to $c_2$ as well. Therefore not all functions from $C$ to $\left\{0,1\right\}$ are included in $\mcl{H}_C$; hence $C$ is not shattered by $\mcl{H}$.\\
+	So, we just proved that an arbitrary set $C=\left\{c_1\right\}$ is shattered by $\mcl{H}$ (where $\mcl{H}$ is the class of threshold functions over $\mathds{R}$); therefore $VCdim(\mcl{H})\geq 1$. At the same time, an arbitrary set $C=\left\{c_1,c_2\right\}$ is not shattered by $\mcl{H}$. So we can conclude that $VCdim(\mcl{H})=1$.
+\end{EX}
+
+\begin{EX} (Intervals)\\
+	Let $\mcl{H}$ be the class of intervals over $\mathds{R}$, namely $\mcl{H}=\left\{h_{a,b}:a,b\in\mathds{R},a<b\right\}$, where $h_{a,b}:\mathds{R}\to\left\{0,1\right\}$ is a functions that is 1 for $x\in(a,b)$ and 0 otherwise. Let's take the set $C=\left\{1,2\right\}$. Then, $\mcl{H}$ shatters $C$ and therefore $VCdim(\mcl{H})\geq 2$. Now let's make an arbitrary set $C=\left\{c_1,c_2,c_3\right\}$ and assume without loss of generality that $c_1\leq c_2\leq c_3$. Then, the labeling (1,0,1) cannot be obtained by an interval, and therefore $\mcl{H}$ does not shatter $C$. We therefore conclude that $VCdim(\mcl{H})=2$.
+\end{EX}
+
+\begin{EX} (Axis aligned rectangles)\\
+	Let $\mcl{H}$ be the class of axis aligned rectangles, formally: $\mcl{H}=\left\{h_{(a_1,a_2,b_1,b_2)}:a_1\leq a_2 \text{ and } b_1\leq b_2 \right\}$, where 
+	\[ h_{(a_1,a_2,b_1,b_2)} = \left\{\begin{aligned}&1\quad if\; a_1\leq x_1\leq a_2 \text{ and } b_1\leq x_2\leq b_2\\ &0\quad\text{otherwise}\end{aligned}\right. \]
 	
+	As can be seen in figure \ref{fig:axis_al_rect}, it is easy to find a set of 4 points that are shattered, so $VCdim(\mcl{H})\geq 4$. 
+	\begin{figure}[!h]
+		\centering
+		\includegraphics[scale=1]{images/axis_aligned_rectangles.pdf}
+		\caption{Left: 4 points are shattered by axis aligned rectangles. Right: any axis aligned rectangle cannot label $c_5$ by 0 and the rest of the points by 1}
+		\label{fig:axis_al_rect}
+	\end{figure}
+	Now let's consider any set $C\in\mathds{R}^2$ of 5 points from which we are gonna take the leftmost, the rightmost, the highest and the lowest one. Without loss of generality, denote $C=\left\{c_1,\dots,c_5\right\}$ and let $c_5$ be the point that was not selected. It is impossible to obtain the label (1,1,1,1,0) by any axis aligned rectangle, because such rectangle must contain $c_1,\dots,c_4$, but at the same time must contain $c_5$ too, because its coordinates are within the intervals defined by the selected points. So this $C$ is not shattered by $\mcl{H}$, and therefore $VCdim(\mcl{H})=4$.
 \end{EX}
 
 
