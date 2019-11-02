@@ -142,15 +142,34 @@ Then, for any $f$ and any $\mcl{D}$ for which the realizability assumption holds
 	Then, the set of "bad" hypothesis is
 	\[ \mcl{H}_B=\left\{h\in\mcl{H}:L_{\mcl{D},f}(h)>\varepsilon\right\} \]
 	The set of "misleading samples", that contains all the m-tuples which lead to a bad hypothesis after applying the ERM algorithm is:
-	\[ M=\left\{S|_x:\exists h\in\mcl{H}_B,L_S(h)=0 \right\} \]
-	Namely, for every $S|_x\in M$, there is a "bad" hypothesis, $h\in\mcl{H}_B$, that looks like a "good" hypothesis on $S|_x$.
-\end{proof}
+	\[ M=\left\{S|_x:\exists h\in\mcl{H}_B,L_S(h)=0 \right\} = \underset{h\in\mcl{H}_B}{\bigcup}\left\{S|_x:L_S(h)=0\right\} \]
+	Namely, for every $S|_x\in M$, there is a "bad" hypothesis, $h\in\mcl{H}_B$, that looks like a "good" hypothesis on $S|_x$.\\
+	Now, let's note that
+	\[ \mcl{D}^m\left(\left\{ S|_x:L_{\mcl{D},f}(h_S)>\varepsilon \right\}\right)\leq\mcl{D}^m(M)=\mcl{D}^m\left( \underset{h\in\mcl{H}_B}{\bigcup}\left\{S|_x:L_S(h)=0\right\} \right) \]
+	Next, we upper bound the right-hand side of the preceding equation using the \textit{union bound}:
+	\[ \mcl{D}(A\cup B)\leq \mcl{D}(A)+\mcl{D}(B) \]
+	In fact, if A and B where disjoint, then $\mcl{D}(A\cup B) = \mcl{D}(A) + \mcl{D}(B)$. However, if $A\cap B\neq\emptyset$, then $\mcl{D}(A\cap B) < \mcl{D}(A) + \mcl{D}(B)$. This can be proved more formally, but we will not do that here.\\
+	Applying the union bound, we find the relation
+	\[ \mcl{D}^m\left(\left\{ S|_x:L_{\mcl{D},f}(h_S)>\varepsilon \right\}\right)\leq\sum_{h\in\mcl{H}_B}\mcl{D}^m\left(\left\{ S|_x:L_S(h)=0\right\}\right) \]
+	All the ERM solutions are "perfect" when evaluated on the training set, meaning that they correctly classify all the samples (that, we have to remember, are all i.i.d.):
+	\[ \mcl{D}^m\left(\left\{ S|_x:L_S(h)=0\right\}\right)=\mcl{D}^m\left(\left\{ S|_x:\forall i,h(x_i)=f(x_i)\right\}\right)=\prod_{i=1}^m \mcl{D}^m\left(\left\{ x_i:h(x_i)=f(x_i) \right\}\right) \]
+	For each individual sampling of an element of the training set we have
+	\[ \mcl{D}^m\left(\left\{ S|_x: h(x_i)=f(x_i)\right\}\right)= 1-L_{\mcl{D},f}(h)\leq 1-\varepsilon \]
+	where the last inequality follows from the fact that $h\in\mcl{H}_B$ (so $L_{\mcl{D},f}(h)>\varepsilon$). Combining the previous relations and using the inequality $1-\varepsilon\leq e^{-\varepsilon}$ we obtain that for every $h\in\mcl{H}_B$:
+	\[ \mcl{D}^m\left(\left\{ S|_x:L_S(h)=0\right\}\right)\leq\prod_{i=1}^m(1-\varepsilon)=\left(1-\varepsilon\right)^m\leq e^{-\varepsilon m} \]
+	So we can conclude that:
+	\[ P_{bad}=\mcl{D}^m(\left\{S|_x:L_{\mcl{D},f}(h_S)>\varepsilon\right\})\leq\sum_{h\in\mcl{H}_B}e^{-\varepsilon m}=\abs{\mcl{H}_B}e^{-\varepsilon m}\underset{\mcl{H}_B\subset\mcl{H}}{\leq} \abs{\mcl{H}}e^{-\varepsilon m} \]
+	Finally, we arrived at the expression:
+	\[ P_{bad} \leq \abs{\mcl{H}}e^{-\varepsilon m}\overset{!}{\leq}\delta \]
+	We then find a bound on $m$, by taking the $log$ of both sides:
+	\[ e^{-\varepsilon m}\leq\frac{\delta}{\abs{\mcl{H}}} \implies -\varepsilon m\leq\log\left(\frac{\delta}{\abs{\mcl{H}}}\right)\implies m\geq -\frac{1}{\varepsilon}\log\left(\frac{\delta}{\abs{\mcl{H}}}\right) \quad\implies m\geq \frac{1}{\varepsilon}\log\left(\frac{\abs{\mcl{H}}}{\delta}\right)\]
+\end{proof} 
 
 This theorem tell us that, for a sufficiently large $m$, the $ERM_\mcl{H}$ rule over a finite hypothesis class will be \textit{probably} (with confidence $1-\delta$) \textit{approximately} (up to an error of $\varepsilon$) correct.\\
 Notes on the theorem:
 \begin{itemize}
 \item $\abs{\mcl{H}}$ is the cardinality (i.e. the dimension) of the hypothesis class
-\item The condition $m\geq\frac{\log (\abs{\mcl{H}}/\delta)}{\varepsilon}$ is just a sufficient (not necessary) condition. In fact it is a nearly weak request.
+\item The condition $m\geq\frac{\log (\abs{\mcl{H}}/\delta)}{\varepsilon}$ is just a sufficient (not necessary) condition. In fact it is a nearly weak request. So it is possible (and indeed happens) to have a good learner even with smaller ($m$ lower than the bound) training datasets.
 \item $m$ does not depend on $f$ or on $\mcl{D}$.
 \end{itemize}
 
