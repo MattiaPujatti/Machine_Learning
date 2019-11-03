@@ -463,10 +463,17 @@ First, we define the class of affine functions:
 \[ L_d=\left\{h_{\vb{w},b}:\vb{w}\in\mathds{R}^d,b\in\mathds{R} \right\} \]
 where
 \[ h_{\vb{w},b}(\vb{x})= \sprod{w}{x}+b = \left(\sum_{i=1}^d w_ix_i\right)+b \]
-Each memeber of $L_d$ is a function $\vb{x}\to\sprod{w}{x}+b$ parametrized by a vector $\vb{w}\in\mathds{R}^d$ (of \textit{weights}) and a scalar (called \textit{bias}) $b\in\mathds{R}$.\\
+Each member of $L_d$ is a function $\vb{x}\to\sprod{w}{x}+b$ parameterized by a 
+vector $\vb{w}\in\mathds{R}^d$ (of \textit{weights}) and a scalar (called 
+\textit{bias}) $b\in\mathds{R}$.\\
 The different hypothesis classes of linear predictors are composition of functions $\phi:\mathds{R}\to\mcl{Y}$ on $L_d$. For example, in binary classification, we can choose $\phi$ to be the sign function, and for regression problems, where $\mcl{Y}=\mathds{R}$, $\phi$ is simply the identity function.\\
 We can give a (2D) geometric interpretation of this functions. As can be seen in figure \ref{fig:affine_geom}:
-% AGGIUNGERE FIGURA
+\begin{figure}[!h]
+	\centering
+	\includegraphics[scale=0.5]{images/affine_geometry.pdf}
+	\caption{Geometrical interpretation of the class of affine functions}
+	\label{fig:affine_geom}
+\end{figure}
 \begin{itemize}
 	\item The bias is proportional to the offset of the line from the origin
 	\item The weights determine the slope of the line
@@ -474,12 +481,81 @@ We can give a (2D) geometric interpretation of this functions. As can be seen in
 \end{itemize} 
 It may be more convenient to incorporate the bias $b$ into the vector $\vb{w}$ as an extra coordinate and adding an extra coordinate with a value of 1 to all $x\in\mcl{X}$; namely let $\vb{w}'=(b,w_1,\dots,w_d)\in\mathds{R}^{d+1}$ and let $\vb{x}'=(1,x_1,\dots,x_d)\in\mathds{R}^{d+1}$. Therefore:
 \[ h_{\vb{w},b}(\vb{x})=\sprod{w}{x}+b=\sprod{w'}{x'} \]
-It follows that each affine function in $\mathds{R}^d$ can be rewritten as an \textit{homogeneous} linear function in $\mathds{R}^{d+1}$ applied over the transformation that appends the constant 1 to each input vector. Therefore, whenever it simplifies the presentation, we will omit the bias term and refer to $L_d$ as the class of homogeneous linear functions of the form $h_{\vb{w}}(\vb{x})=\sprod{w}{x}$.
+It follows that each affine function in $\mathds{R}^d$ can be rewritten as an 
+\textit{homogeneous} linear function in $\mathds{R}^{d+1}$ applied over the 
+transformation that appends the constant 1 to each input vector. Therefore, 
+whenever it simplifies the presentation, we will omit the bias term and refer 
+to $L_d$ as the class of homogeneous linear functions of the form 
+$h_{\vb{w}}(\vb{x})=\sprod{w}{x}$.
 
+\section{Halfspaces}
+The first hypothesis class we consider is the class of halfspaces, designed for 
+binary classification problems, namely $\mcl{X}=\mathds{R}^d$ and 
+$\mcl{Y}=\left\{-1,1\right\}$. The class of halfspaces is defined as follow:
+\[ HS_d=sign\circ L_d \left\{\vb{x}\to 
+sign\left(h_{\vb{w},b}(\vb{x})\right):h_{\vb{w},b}\in L_d \right\} \]
+In other words, each halfspace hypothesis in $HS_d$ is parameterized by 
+$\vb{w}\in\mathds{R}^d$ and $b\in\mathds{R}$ and upon receiving a vector 
+$\vb{x}$ the hypothesis returns the label 
+$sign\left(\sprod{\vb{w}}{\vb{x}}+b\right)$.\\
+To illustrate this hypothesis class geometrically, it is instructive to 
+consider the case $d=2$.
+\begin{figure}[!h]
+	\centering
+	\includegraphics[scale=0.5]{images/halfspaces_2D.pdf}
+	\caption{Two-dimensional representation of halfspaces}
+	\label{fig:halfspaces_2D}
+\end{figure}
+Each hypothesis forms a hyperplane that is perpendicular to the vector $\vb{w}$ 
+and intersects the vertical axis at the 
+point $(0,-b/w_2)$. The instances that are "above" the hyperplane, that share 
+an acute angle with $\vb{w}$, are labeled positively. Instances that are 
+"below" the hyperplane, that share an obtuse angle with $\vb{w}$, are labeled 
+negatively. An example can be seen in figure \ref{fig:halfspaces_2D}.\\
+However, as we can see from figure \ref{fig:halfspaces_realizability}, to find 
+an ERM halfspace we need to be in a realizable case: in this context, the 
+realizable case is often referred to the \textit{separable} case, since it is 
+possible to separate with an hyperplane all the positive examples from all the 
+negative ones, while it is computationally hard to implement the ERM rule in 
+the non separable case (agnostic case).
+\begin{figure}[!h]
+	\centering
+	\includegraphics[scale=0.5]{images/halfspaces_realizability.pdf}
+	\caption{Realizability condition of ERM algorithm for halfspaces}
+	\label{fig:halfspaces_realizability}
+\end{figure}
 
+\subsection{Linear Programming for the Class of Halfspaces}
+\textit{Linear programs} (LP) are problems that can be expressed as maximizing 
+a linear function subject to linear inequalities. The main target, consist into 
+finding the quantity $\max_{\vb{w}\in\mathds{R}^d} \sprod{u}{w}$ subject to 
+$A\vb{w}\geq\vb{v}$ where $\vb{w}\in\mathds{R}^d$ is the vector of variables we 
+wish to determine, $A$ is a $m\times d$ matrix and $\vb{v}\in\mathds{R}^m$ and 
+$\vb{u}\in\mathds{R}^d$ are vectors. Linear programs can be solved efficiently 
+namely, in a polinomial time.\\
+Let's assume, for simplicity, the homogeneous case, and let 
+$S=\left\{(\vb{x_i},y_i)\right\}_{i=1}^m$ be a training set of size $m$. Sinc 
+we assume the realizable case, an ERM predictor should have zero errors on the 
+training set ($L_S(h_S)$). So we are looking for some vector 
+$\vb{w}\in\mathds{R}^d$ for which $sign\left(\sprod{w}{x_i}\right)=y_i$; or, 
+equivalently, $y_i\sprod{w}{x_i}>0$ $\forall i=1,\dots,m$. Let $\vb{w^*}$ be a 
+vector that satisfies this condition (it must exist since we assumed 
+realizability). Define $\gamma=\min_i\left(y_i\sprod{w^*}{x_i}\right)$ and let 
+$\vb{\bar{w}}=\vb{w}/\gamma$. Therefore, for all $i$ we have
+\[ y_i\sprod{\bar{w}}{x_i}= \frac{1}{\gamma}y_i\sprod{w^*}{x_i}\geq 1 \]
+We have thus shown that there exist a vector that satisfy  
+$y_i\sprod{w}{x_i}\geq 1$ and clearly, such a vector is an ERM predictor.\\
+To find a vector that satisfy the previous equation we have to use the 
+following procedure: set $A$ to be the $m\times d$ matrix whose rows are the 
+instances multiplied by $y_i$. Namely $A_{ij}=y_i x_{i,j}$ where $x_{i,j}$ 
+represents the j-th component of the vector $\vb{x_i}$. Let $\vb{v}$ be the 
+vector $(1,\dots,1)\in\mathds{R}^m$. Then, we can re-write the previous 
+equation as $A\vb{w}\geq\vb{v}$.\\
+This procedure requires also a maximization object, because the $\vb{w}$ that 
+satisfy the constraints are equal candidates as output hypothesis. For this 
+reason, we set a "dummy" objective $\vb{u}=(0,\dots,0)\in\mathds{R}^d$.
 
-
-
+\subsection{Perceptron for Halfspaces}
 
 
 
