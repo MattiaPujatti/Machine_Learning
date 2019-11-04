@@ -671,8 +671,67 @@ view. However, the case in which $A$ is not invertible requires a special
 handling (not part of the course).
 
 \section{Polynomial Regression}
- 
+Some learning tasks call for nonlinear predictors, such as polynomial 
+predictors. Take, for instance, a one dimensional polynomial function of degree 
+$n$ that is
+\[ p(x)=a_0+a_1x+a_2x^2+\dots +a_nx^n \]
+where $(a_0,\dots,a_n)$ is a vector of coefficients of size $n+1$ that we have 
+to estimate.\\
+One way to learn this class is by reduction to a linear regression problem, 
+which we already know how to solve. To translate a polynomial regression 
+problem to a linear regression one we define the mapping:
+\[ \psi:\mathds{R}\to\mathds{R}^{n+1} \qquad \psi(x)=(1,x,x^2,\dots,x^n) \]
+So, we obtain that:
+\[ p(\psi(x))=a_0+a_1x+a_2x^2+\dots+a_nx^n=\sprod{a}{\psi(x)} \] 
+and we can find the optimal vector coefficients using, for example, the Least 
+Squares method.\\
+What we have just done is moving to an higher dimensional space, transforming 
+the nonlinear problem we were trying to solve in an easier linear one.\\
+We also need to notice that however the variables are not independent and the 
+optimization can become unstable for large $n$.
 
+\section{Logistic Regression}
+In Logistic Regression we learn a family of functions $h$ from $\mathds{R}^d$ 
+to the interval $[0,1]$. It is mostly used for classification problems to 
+reframe them as regression problem: we can in fact interpret $h(\vb{x})$ as the 
+\textit{probability} that 1 is the label of $\vb{x}$.\\
+The hypothesis class associated with logistic regression is the composition of 
+a \textbf{sigmoid function} $\phi_{sig}:\mathds{R}\to[0,1]$ over the class of 
+linear functions $L_d$. In particular, the most used is the \textit{logistic 
+function}, represented in picture \ref{fig:logistic_func} and defined as
+\[ \phi_{sig}(z)=\frac{1}{1+e^{-z}} \]
+Properties:
+\begin{itemize}
+	\item It is bigger than $1/2$ for positive values and smaller for negative 
+	ones.
+	\item Tends to 1 for large positive values and to 0 for negative ones.
+	\item Can be viewed as a scaled and shifted $sign$ function.
+\end{itemize}
+The hypothesis class, in the homogeneous case, is
+\[ H_{sig}=\phi_{sig}\circ 
+L_d=\left\{\vb{x}\to\phi_{sig}\left(\sprod{w}{x}\right):\vb{w}\in\mathds{R}^d 
+\right\} \]
+Note that when the scalar product $\sprod{w}{x}$ is very large then 
+$\phi_{sig}(\sprod{w}{x})$ is close to 1, while when that quantity is very 
+small then $\phi_{sig}(\sprod{w}{x})$ is close to 0.\\
+Recall that the predictor of the halfspace corresponding to a vector $\vb{w}$ 
+is the quantity $sign(\sprod{w}{x})$. Therefore the predictions of the 
+halfspace hypothesis and the logistic hypothesis are very similar whenever 
+$\abs{\sprod{w}{x}}$ is large. However, when $\abs{\sprod{w}{x}}$ is close to 0 
+we have that $\phi_{sig}(\sprod{w}{x})\simeq 1/2$. Intuitively, the logistic 
+hypothesis is not sure about the value of the label, so it guessed that is 
+$sign(\sprod{w}{x})$ with probability slight to $50\%$. In contrast, the 
+halfspace hypothesis always output a deterministic prediction of either 1 or 
+-1, even if $\abs{\sprod{w}{x}}$ is very close to 0.\\
+Next, we specify a loss function:
+\[ \ell\left(h_{\vb{w}},(\vb{x},y)\right)=\log(1+e^{-y\sprod{w}{x}}) \]
+Therefore, given a training set $S=(\vb{x_1},y_1),\dots,(\vb{x_m},y_m))$, the 
+ERM problem associated with logistic regression is
+\[ \underset{\vb{w}\in\mathds{R}^d}{argmin} \frac{1}{m}\sum_{i=1}^m 
+\log(1+e^{-y_i\sprod{w}{x_i}}) \]
+
+
+ \section{Maximum Likelihood Estimation}
 
 
 \chapter{VC Dimension}
