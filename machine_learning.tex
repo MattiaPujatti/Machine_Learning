@@ -8,6 +8,7 @@
 \usepackage{dsfont} % for the R of real
 \usepackage{physics}
 \usepackage{bm} % for a textbf in math mode
+\usepackage{pythonhighlight} % for python codes
 
 \theoremstyle{plain}
 \newtheorem{THEO}{Theorem}
@@ -556,23 +557,132 @@ satisfy the constraints are equal candidates as output hypothesis. For this
 reason, we set a "dummy" objective $\vb{u}=(0,\dots,0)\in\mathds{R}^d$.
 
 \subsection{Perceptron for Halfspaces}
+A different implementation of the ERM rule is the Perceptron algorithm of 
+Rosenblatt (1938). The main target of this algorithm is to find the vector 
+$\vb{w}$ that represents the separating hyperplane, in homogeneous 
+coordinates.\\
+The Perceptron is an iterative algorithm that construct a sequence of vectors 
+$\vb{w}^{(1)},\vb{w}^{(2)},\dots$, starting from a vector $\vb{w}^{(1)}$ set to 
+be the all-zero vector. At iteration $t$ the Percetron finds an example $i$ 
+that is mislabeled by $\vb{w}^{(t)}$, namely, an example for which 
+$sign(\sprod{w^{(t)}}{x_i})\neq y_i$. Then the Perceptron updates 
+$\vb{w}^{(t)}$ by adding to it the instance $\vb{x_i}$ scaled by the label 
+$y_i$: $\vb{w}^{(t+1)}=\vb{w}^{(t)}+y_i\vb{x_i}$. Recall that our goal is to 
+have $y_i\sprod{w}{x_i}>0$ for all $i$ and note that
+\[ y_i\sprod{w^{(t+1)}} {x_i} = y_i\sprod{w^{(t)}+y_i\vb{x_i}}{x_i} = 
+y_i\sprod{w^{(t)}}{x_i}+\norm{x_i}^2 \]
+So every update of the vector $\vb{w}$ guides the solution to be "more correct" 
+on the $i$-th example, the couple $(\vb{x_i},y_i)$.
+
+% AGGIUNGERE CODICE
+
+The following theorem guarantees that in the realizable case, the algorithm 
+stops with all the sample points classified.
+\begin{THEO}
+	Assume that $(\vb{x_1},y_1),\dots,(\vb{x_m},y_m)$ is separable; let 
+	$B=\min\left\{\norm{\vb{w}}:\forall i\in [m],\; y_i\sprod{w}{x_i}\geq 1 
+	\right\}$ and let $R=\max_i \norm{\vb{x_i}}$. Then, the Perceptron 
+	algorithm stops after at most $(RB)^2$ iterations, and when it stops it 
+	holds that $\forall i\in [m]$, $y_i\sprod{\vb{w}^{(t)}}{x_i}>0$ (so when 
+	there are no more wrongly classified samples).
+\end{THEO}
+
+\begin{proof}
+	% FARE QUESTA PROOF
+\end{proof}
+Notes on Perceptron:
+\begin{itemize}
+	\item Perceptron is simple to implement, and is guaranteed to converge (at 
+	least for the realizable cases).
+	\item The convergence rate depends on the parameter $B$, which in some 
+	situations might be exponentially large in $d$:
+	\begin{itemize}
+		\item If the input vectors are not normalized and arranged in some 
+		unfavorable ways, the running time can be very long.
+		\item In such cases, it would be better to implement the ERM problem 
+		with Linear Programming.
+	\end{itemize}
+	\item The solution is not unique: you can have many different results, 
+	which one is picked depends on starting values.
+	\item If data are not separable the Perceptron should be run for some time 
+	and we should keep the best solution found up to that point.
+\end{itemize}
 
 
+\section{Linear Regression}
+Linear Regression is a common statistical tool used to estimate the relation 
+between some explanatory variables and some real valued outcome. Cast as a 
+learning problem, the domain set $\mcl{X}$ is a subset of $\mathds{R}^d$ and 
+the label set $\mcl{Y}$ is the set of real numbers. We would like to learn a 
+function $h:\mathds{R}^d\to\mathds{R}$ that best approximates the relationship 
+between our variables (input and output).\\
+The hypothesis class of linear regression predictors is simply the set of 
+linear functions:
+\[ 
+\mcl{H}_{reg}=L_d=\left\{\vb{x}\to\sprod{w}{x}+b:\vb{w}\in\mathds{R}^d, 
+b\in\mathds{R}
+ \right\} \]
+Next, we need to define a loss function for regression. While the 
+classification the definition of the loss is straightforward, as a predictor 
+can guess or not the correct result, in the regression case there are solutions 
+that are "more correct" than others. We therefore need to define how much we 
+shall "penalize" for the discrepancy between the prediction $h(\vb{x})$ and the 
+correct label $y$. A common way is to use the \textbf{squared-loss function}:
+\[ \ell(h,(\vb{x},y)) = \left(h(\vb{x})-y\right)^2 \]
+For this loss function, the corresponding empirical risk is called the 
+\textbf{Mean-Squared Error}:
+\begin{equation}
+L_S(h)=\frac{1}{m}\sum_{i=1}^m \left(h(\vb{x}_i)-y_i\right)^2
+\label{eq:mean_squared_err}
+\end{equation}
+Of course, there are a variety of other loss functions that one can use, for 
+example the \textit{absolute value loss function}, defined as 
+$\ell(h,(\vb{x},y)) = \abs{h(\vb{x})-y}$.\\
+An example of linear regression can be seen in figure \ref{fig:ex_lin_regr}.
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.5]{images/linregress_example.pdf}
+	\caption{Example of linear regression method}
+	\label{fig:ex_lin_regr}
+\end{figure}
 
 
+\section{Least Squares}
+The Least Squares is the algorithm that solves the ERM problem for the 
+hypothesis class of linear regression predictors with respect to the squared 
+loss. The ERM problem with respect to this class, given a training set $S$ and 
+using the homogeneous version of $L_d$ is to find the parameters vector that 
+minimize the mean-squared error (\ref{eq:mean_squared_err}) between the 
+estimated and training values, namely
+\[ \underset{\vb{w}}{argmin} L_S(h_{\vb{w}}) = 
+\underset{\vb{w}}{argmin}\frac{1}{m}\sum_{i=1}^m\left(\sprod{w}{x_i}-y_i\right)^2
+ \]
+To solve the problem we calculate the gradient of the objective function and we 
+impose it equal to zero:
+\[ \frac{2}{m}\sum_{i=1}^m\left(\sprod{w}{x_i}-y_i\right)\vb{x_i}=0 \]
+We can rewrite the problem as $A\vb{w}=\vb{b}$ where
+\[ 
+A=\left(\sum_{i=1}^m\vb{x_i}\vb{x_i^T}\right)\quad\text{and}\quad\vb{b}=\sum_{i=1}^m
+y_i\vb{x_i} \] 
+If $A$ is invertible then the solution of the ERM problem is 
+\[ \vb{w}=A^{-1}\vb{b} \]
+Inversion of $A$ is the most expensive operation, from a computational point of 
+view. However, the case in which $A$ is not invertible requires a special 
+handling (not part of the course).
 
-
-
-
-
-
-
-
+\section{Polynomial Regression}
+ 
 
 
 
 \chapter{VC Dimension}
-We have seen, in the previous chapters, that a finite class ($\abs{\mcl{H}}<\infty$) is agnostic PAC learnable. What about infinite classes? We would like to understand when infinite classes are learnable and also the number of samples that we need to work with.\\ To show that the size of the hypothesis class is not the right characterization of its sample complexity, we first present a simple example of an infinite-size hypothesis class that is learnable.\\
+We have seen, in the previous chapters, that a finite class 
+($\abs{\mcl{H}}<\infty$) is agnostic PAC learnable. What about infinite 
+classes? We would like to understand when infinite classes are learnable and 
+also the number of samples that we need to work with.\\ To show that the size 
+of the hypothesis class is not the right characterization of its sample 
+complexity, we first present a simple example of an infinite-size hypothesis 
+class that is learnable.\\
 
 \vspace{0.5cm}
 \begin{EX}
