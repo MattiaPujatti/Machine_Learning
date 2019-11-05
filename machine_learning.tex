@@ -732,6 +732,31 @@ ERM problem associated with logistic regression is
 
 
  \section{Maximum Likelihood Estimation}
+The Maximum Likelihood Estimator (MLE) is a statistical approach to a learning 
+problem, used to find the parameters that maximize the joint probability o a 
+given dataset, assuming a specific parametric probability function.\\
+MLE essentially uses a \textit{generative} approach, in which it is assumed 
+that the underlying distribution over the data has a specific parametric form.\\
+Given a training set $S=((\vb{x_1},y_1),\dots,(\vb{x_m},y_m))$, we assume that 
+each $(\vb{x_i},y_i)$ is i.i.d. from some probability distribution 
+$\mcl{P}_\theta$ that is characterized by some parameters that we want to 
+estimate. Next, we consider the \textit{likelihood} of data (given the 
+parameters), i.e. the joint probability of the dataset:
+\[ L(S|\theta)=\prod_{i=1}^m\mcl{P}_\theta(\vb{x_i}) \]
+Then, to maximize this function, we consider its logarithm: the function $\log$ 
+is monotonic, so it will preserve the maximum but it will be also simpler to 
+differentiate.
+\[ 
+\log(L(S|\theta))=\log\left(\prod_{i=1}^m\mcl{P}_\theta(\vb{x_i})\right)=\sum_{i=1}^m\log\left(\mcl{P}_\theta(\vb{x_i})\right)
+  \]
+At this point, we want to compute the best choice for the parameter $\theta$, 
+that is the one that maximize the likelihood function:
+\[ \hat{\theta}=\underset{\theta}{argmax}\, L(S|\theta) \]
+
+\subsection{MLE and Logistic Regression}
+
+
+
 
 
 \chapter{VC Dimension}
@@ -819,7 +844,99 @@ To show that $VCdim(\mcl{H})=d$ we need to show that:
 	Now let's consider any set $C\in\mathds{R}^2$ of 5 points from which we are gonna take the leftmost, the rightmost, the highest and the lowest one. Without loss of generality, denote $C=\left\{c_1,\dots,c_5\right\}$ and let $c_5$ be the point that was not selected. It is impossible to obtain the label (1,1,1,1,0) by any axis aligned rectangle, because such rectangle must contain $c_1,\dots,c_4$, but at the same time must contain $c_5$ too, because its coordinates are within the intervals defined by the selected points. So this $C$ is not shattered by $\mcl{H}$, and therefore $VCdim(\mcl{H})=4$.
 \end{EX}
 
+\begin{EX} (\textbf{VC dimension of halfspaces hypothesis class})\\
+	We want to prove that the VC dimension of the class of homgeneous 
+	halfspaces in $\mathds{R}^d$ is $d$.
+	\begin{itemize}
+		\item $VCdim(\mcl{H})\geq d$: I have to find at least one set of size 
+		$d$ that is shattered by $\mcl{H}$. For this reason I consider the set 
+		of vectors $\vb{e}_1,\dots,\vb{e}_d$, that are the vectors of the 
+		canonical base in $\mathds{R}^d$: this set is shattered by the class 
+		$\mcl{H}$. In fact, for labeling $y_1,\dots,y_d$, and setting 
+		$\vb{w}=(y_1,\dots,y_d)$, then $sprod{w}{e_i}=y_i$ for all $i$.
+		\item $VCdim(\mcl{H})\leq d$: I have to show that every possible set of 
+		size $d+1$ cannot be shattered. Let's consider the generic $d+1$-set 
+		$\vb{x}_1,\dots,\vb{x}_{d+1}$; these vectors, as we known from 
+		geometry, are linearly dependent, i.e. there exists a set of parameters 
+		$\alpha_1,\dots,\alpha_{d+1}$ (not all zeros) such that 
+		$\sum_{i=1}^{d+1}\alpha_i\vb{x_i}=0$. So, if I define the two sets 
+		$I=\left\{i:\alpha_i>0\right\}$ and $J=\left\{j:\alpha_j<0\right\}$, at 
+		least one of these is not empty. Let us first assume that both of them 
+		are nonempty, then:
+		\[ \sum_{i\in I}\alpha_i\vb{x}_i = \sum_{j\in J}\abs{\alpha_j}\vb{x}_j 
+		\] 
+		Now suppose that $\vb{x}_1,\dots,\vb{x}_{d+1}$ are shattered by the 
+		class of homogeneous halfspaces. Then, there must exist a vector 
+		$\vb{w}$ such that $\sprod{w}{x_i}>0$ for all $i\in I$ while 
+		$\sprod{w}{x_j}<0$ for all $j\in J$. It follows that
+		\[ 0<\sum_{i\in I}\alpha_i\sprod{x_i}{w}=\sprod{\sum_{i\in 
+		I}\alpha_i\vb{x_i}}{w}=\sprod{\sum_{j\in 
+		J}\abs{\alpha_j}\vb{x_j}}{w}=\sum_{j\in 
+		J}\abs{\alpha_j}\sprod{x_j}{w}<0 \]
+		which leads to a contradiction. Finally, if $J$ (respectively, $I$) is 
+		empty, then the right-most (respectively, left-most) inequality should 
+		be replaced by an equality, which still leads to contradiction.
+	\end{itemize}
+	Also, the VC dimension of the class of nonhomogeneous halfspaces in 
+	$\mathds{R}^d$ is $d+1$.
+\end{EX}
 
+Care, that the VC dimension does not always correspond to the number of 
+parameters!
+\begin{EX}
+	We can look for example at the class 
+	$\mcl{H}=\left\{h_\theta:\theta\in\mathds{R}\right\}$, 
+	$h_\theta:\mcl{X}\to\left\{0,1\right\}$ $h_\theta=\left[0.5\sin(\theta 
+	x)\right]$.\\
+	It can be proved that $\mcl{H}$ has infinite VC dimension.
+	\begin{figure}[!h]
+		\centering
+		\includegraphics[scale=0.6]{images/ex_infty_VCdim.pdf}
+		\caption{Example of a hypothesis class with infinity VC-dimension}
+	\end{figure}
+\end{EX}
+
+\section{Fundamental Theorem of Statistical Learning}
+We have already shown that a class of infinite VC-dimension is not learnable; 
+however, the opposite statement is also true, as guarantee by the following 
+theorem.
+\begin{THEO} (\textbf{The Fundamental Theorem of Statistical Learning})\\
+	Let $\mcl{H}$ be an hypothesis class of function from a domain $\mcl{X}$ to 
+	$\left\{0,1\right\}$ and let the loss function be the 0-1 loss. Then, the 
+	following are equivalent:
+	\begin{enumerate}
+		\item $\mcl{H}$ has the uniform convergence property.
+		\item Any ERM rule is a successful agnostic PAC learner for $\mcl{H}$.
+		\item $\mcl{H}$ is agnostic PAC learnable.
+		\item $\mcl{H}$ is PAC learnable.
+		\item Any ERM rule is a successful PAC learner for $\mcl{H}$.
+		\item $\mcl{H}$ has a finite VC-dimension.
+	\end{enumerate}
+\end{THEO} 
+Not only does the VC-dimension characterize PAC learnability; it even 
+determines the sample complexity, as can be seen in the next theorem.
+\begin{THEO} (\textbf{The Fundamental Theorem of Statistical Learning - 
+Quantitative version})\\
+	Let $\mcl{H}$ be an hypothesis class of function from a domain $\mcl{X}$ to 
+	$\left\{0,1\right\}$ and let the loss function be the 0-1 loss. Assume that 
+	$VCdim(\mcl{H})=d<\infty$. Then, there are absolute constants $C_1,C_2$ 
+	such that:
+	\begin{enumerate}
+		\item $\mcl{H}$ has the uniform convergence property with sample 
+		complexity
+		\[ C_1\frac{d+\log(1/\delta)}{\varepsilon^2}\leq 
+		m_{\mcl{H}}^{UC}(\varepsilon,\delta)\leq 
+		C_2\frac{d+\log(1/\delta)}{\varepsilon^2} \]
+		\item $\mcl{H}$ is agnostic PAC learnable with sample complexity 
+		\[ C_1\frac{d+\log(1/\delta)}{\varepsilon^2}\leq 
+		m_{\mcl{H}}(\varepsilon,\delta)\leq 
+		C_2\frac{d+\log(1/\delta)}{\varepsilon^2} \]
+		\item $\mcl{H}$ is PAC learnable with sample complexity
+		\[ C_1\frac{d+\log(1/\delta)}{\varepsilon}\leq 
+		m_{\mcl{H}}(\varepsilon,\delta)\leq 
+		C_2\frac{d\log(1/\varepsilon)+\log(1/\delta)}{\varepsilon} \]
+	\end{enumerate}
+\end{THEO}
 
 
 
