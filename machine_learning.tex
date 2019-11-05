@@ -8,7 +8,8 @@
 \usepackage{dsfont} % for the R of real
 \usepackage{physics}
 \usepackage{bm} % for a textbf in math mode
-\usepackage{pythonhighlight} % for python codes
+\usepackage{tcolorbox} %for boxes of text/math
+
 
 \theoremstyle{plain}
 \newtheorem{THEO}{Theorem}
@@ -574,7 +575,20 @@ y_i\sprod{w^{(t)}}{x_i}+\norm{x_i}^2 \]
 So every update of the vector $\vb{w}$ guides the solution to be "more correct" 
 on the $i$-th example, the couple $(\vb{x_i},y_i)$.
 
-% AGGIUNGERE CODICE
+\begin{tcolorbox}
+	\begin{center}
+		\textbf{Perceptron Algorithm}
+	\end{center}
+	\textbf{Input:} a training set $(\vb{x}_1,y_1),\dots,(\vb{x}_m,y_m)$\\
+	\textbf{Initialization:} $w^{(1)} = (0,...,0)$\\
+	
+	for t = 1,2,..,m:\\
+	\-\ \quad	if $\exists\;i $ such that $y_i\sprod{w^{(t)}}{x_i}\leq 0$ 
+	then\\
+	\-\ \quad	$\vb{w}^{(t+1)}=\vb{w}^{(t)}+y_i\vb{x_i}$\\
+		else:\\
+	\-\ \quad	\textbf{output:} $\vb{w}$ 	
+\end{tcolorbox}
 
 The following theorem guarantees that in the realizable case, the algorithm 
 stops with all the sample points classified.
@@ -700,6 +714,12 @@ a \textbf{sigmoid function} $\phi_{sig}:\mathds{R}\to[0,1]$ over the class of
 linear functions $L_d$. In particular, the most used is the \textit{logistic 
 function}, represented in picture \ref{fig:logistic_func} and defined as
 \[ \phi_{sig}(z)=\frac{1}{1+e^{-z}} \]
+\begin{figure}[!h]
+	\centering
+	\includegraphics[scale=0.7]{images/logistic_func.pdf}
+	\caption{Logistic Function}
+	\label{fig:logistic_func}
+\end{figure}
 Properties:
 \begin{itemize}
 	\item It is bigger than $1/2$ for positive values and smaller for negative 
@@ -754,8 +774,27 @@ that is the one that maximize the likelihood function:
 \[ \hat{\theta}=\underset{\theta}{argmax}\, L(S|\theta) \]
 
 \subsection{MLE and Logistic Regression}
-
-
+We can show that MLE solution is equivalent to ERM solution for logistic 
+regression.\\
+As we know, for logistic regression:
+\begin{enumerate}
+	\item Assume the training set 
+	$S=\left((\vb{x_1},y_1),\dots,(\vb{x_m},y_m)\right)$
+	\item 
+	$P\left[y_i=1\right]=h_{\vb{w}}(\vb{x_i})=\frac{1}{1+e^{-\sprod{w}{x_i}}}=\frac{1}{1+e^{-y_i\sprod{w}{x_i}}}$
+	\item 	
+	$P\left[y_i=-1\right]=1-h_{\vb{w}}(\vb{x_i})=\frac{1}{1+e^{\sprod{w}{x_i}}}=\frac{1}{1+e^{-y_i\sprod{w}{x_i}}}$
+	\item Likelihood of the training set (joint probability):
+	\[ P\left[S|\vb{w}\right]=\prod_{i=1}^m 
+	\left(\frac{1}{1+e^{-\sprod{w}{x_i}}}\right) \]
+	\[ \log(P\left[S|\vb{w}\right])=-\sum_{i=1}^m 
+	\log(1+e^{-y_i\sprod{w}{x_i}}) 
+	\]
+\end{enumerate}
+While the Maximum Likelihood Estimator is:
+\[ \underset{\vb{w}}{argmax}\;L(S;\vb{w})=\underset{\vb{w}}{argmax}\; 
+\log(P[S|\vb{w}])=\underset{\vb{w}}{argmin}\;\sum_{i=1}^m 
+\log(1+e^{-y_i\sprod{w}{x_i}}) \]
 
 
 
