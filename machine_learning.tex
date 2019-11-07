@@ -149,8 +149,12 @@ Then, for any $f$ and any $\mcl{D}$ for which the realizability assumption holds
 	Namely, for every $S|_x\in M$, there is a "bad" hypothesis, $h\in\mcl{H}_B$, that looks like a "good" hypothesis on $S|_x$.\\
 	Now, let's note that
 	\[ \mcl{D}^m\left(\left\{ S|_x:L_{\mcl{D},f}(h_S)>\varepsilon \right\}\right)\leq\mcl{D}^m(M)=\mcl{D}^m\left( \underset{h\in\mcl{H}_B}{\bigcup}\left\{S|_x:L_S(h)=0\right\} \right) \]
-	Next, we upper bound the right-hand side of the preceding equation using the \textit{union bound}:
-	\[ \mcl{D}(A\cup B)\leq \mcl{D}(A)+\mcl{D}(B) \]
+	Next, we upper bound the right-hand side of the preceding equation using 
+	the \textit{union bound}:
+	\begin{equation}
+	\mcl{D}(A\cup B)\leq \mcl{D}(A)+\mcl{D}(B)
+	\label{eq:union_bound}
+	\end{equation}
 	In fact, if A and B where disjoint, then $\mcl{D}(A\cup B) = \mcl{D}(A) + \mcl{D}(B)$. However, if $A\cap B\neq\emptyset$, then $\mcl{D}(A\cap B) < \mcl{D}(A) + \mcl{D}(B)$. This can be proved more formally, but we will not do that here.\\
 	Applying the union bound, we find the relation
 	\[ \mcl{D}^m\left(\left\{ S|_x:L_{\mcl{D},f}(h_S)>\varepsilon \right\}\right)\leq\sum_{h\in\mcl{H}_B}\mcl{D}^m\left(\left\{ S|_x:L_S(h)=0\right\}\right) \]
@@ -307,6 +311,7 @@ Recalling the definition \ref{def:agnostic_PAC_l}, for which the hypothesis gene
 \[ L_\mcl{D}(h)\leq\min_{h'\in\mcl{H}}L_\mcl{D}(h')+\varepsilon \]
 we can implement the definition we have written for the loss function deducing that:
 \[ L_\mcl{D}(h) = \mathds{E}_{z\sim\mcl{D}}\left[\ell(h,z)\right] \]
+\label{def:agnosticPAC_general_loss}
 \end{DEF}
 
 
@@ -352,8 +357,75 @@ This means that the function $m_\mcl{H}^{UC}$ measures the (minimal) sample comp
 	\end{itemize}
 \end{PROP}
 \begin{proof}
-	RICORDARSI DI FARE PURE QUESTA 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	Fix some $\varepsilon,\delta$. We need to find a sample size $m$ that 
+	guarantes that for any $\mcl{D}$, with probability at least $1-\delta$ of 
+	the choice of $S=(z_1,\dots,z_m)$ sampled i.i.d. from $\mcl{D}$ we have 
+	that for all $h\in\mcl{H}$, $\abs{L_S(h)-L_\mcl{D}(h)}\leq\varepsilon$ (so 
+	we are asking $S$ to be $\varepsilon$-representative for some $m$). Namely
+	\[ \mcl{D}^m\left(\left\{S:\forall 
+	h\in\mcl{H},\abs{L_S(h)-L_\mcl{D}(h)}\leq\varepsilon \right\}\right)\geq 
+	1-\delta \]	 
+	Equivalently, we need to show that the probability of \textit{not} having 
+	uniform convergence is
+	\[ \mcl{D}^m\left(\left\{S:\exists h\in\mcl{H},\abs{L_S(h)-L_\mcl{D}(h)} > 
+	\varepsilon \right\}\right)\leq \delta \]	
+	In the expression above, I can rewrite the set as the union over $h$:
+	\[ \left\{S:\exists h\in\mcl{H},\abs{L_S(h)-L_\mcl{D}(h)} > 
+	\varepsilon \right\} = 
+	\bigcup_{h\in\mcl{H}}\left\{S:\abs{L_S(h)-L_\mcl{D}(h)} > 
+	\varepsilon \right\} \] 
+	and, applying the Union Bound (\ref{eq:union_bound}), we obtain
+	\[ \mcl{D}^m\left(\left\{S:\exists h\in\mcl{H},\abs{L_S(h)-L_\mcl{D}(h)} > 
+	\varepsilon 
+	\right\}\right)\leq\sum_{h\in\mcl{H}}\mcl{D}^m\left\{S:\abs{L_S(h)-L_\mcl{D}(h)}
+	 > \varepsilon \right\} \]
+	 The next step will be to show that for any fixed hypothesis $h$, the gap 
+	 between the true and the empirical risk is likely to be small (for a 
+	 sufficiently large $m$).\\
+	 Now, recall that 
+	 $L_\mcl{D}(h)=\mathds{E}_{z\sim\mcl{D}}\left[\ell(h,z)\right]$ 
+	 (\ref{def:agnosticPAC_general_loss}) and that 
+	 $L_S(h)=\frac{1}{m}\sum_{i=1}^m\ell(h,z_i)$ (\ref{eq:emp_risk}). Since 
+	 each $z_i$ is sampled i.i.d. from $\mcl{D}$, the expected value of the 
+	 random variable $\ell(h,z_i)$ is $L_\mcl{D}(h)$. By the linearity of 
+	 expectation, it follows that $L_\mcl{D}(h)$ is also the expected value of 
+	 $L_S(h)$. Hence, the quantity $\abs{L_S(h)-L_\mcl{D}}$ is the deviation of 
+	 the random variable $L_S(h)$ from its expectation. A basic statistical 
+	 fact, the law of large numbers, states that when $m$ goes to infinity, 
+	 empirical averages converge to their true expectation, and this is also 
+	 valid for $L_S(h)$, since it is the empirical average of $m$ i.i.d. 
+	 samples.\\
+	 However, this low is only an asymptotic result, and it provides no 
+	 information about the gap between empirical averages and their expected 
+	 value: to quantify this gap we will use a measure concentration inequality 
+	 due to Hoeffding:
+	 \begin{LEM}
+	 	(\textbf{Hoeffding's Inequality})\\
+	 	Let $\theta_1,dots,\theta_m$ be a sequence of i.i.d. random variables 
+	 	and assume that for all $i$, $\mathds{E}[\theta_i]=\mu$ and 
+	 	$\mathds{P}[a\leq\theta_i\leq b]=1$. Then, for any $\varepsilon>0$:
+	 	\[ \mathds{P}\left[\abs{\frac{1}{m}\sum_{i=1}^m 
+	 	\theta_i-\mu}>\varepsilon\right]\leq 
+	 	2\exp(-\frac{2m\varepsilon^2}{(b-a)^2}) \]
+	 \end{LEM}
+ Getting back to our problem, let $\theta_i$ be the random variable 
+ $\ell(h,z_i)$. Since $h$ is fixed and $z_1,\dots,z_m$ are sample i.i.d., it 
+ follows that $\theta_1,\dots,\theta_m$ are also i.i.d. random variables. 
+ Furthermore, $L_S(h)=\frac{1}{m}\sum_{i=1}^m\theta_i$ and $L_\mcl{D}(h)=\mu$. 
+ Let us further assume that the range of $\ell$ is $[0,1]$. We therefore obtain 
+ that
+ \[ \mcl{D}^m\left\{S:\abs{L_S(h)-L_\mcl{D}(h)} > \varepsilon \right\} = 
+ \mathds{P}\left[\abs{\frac{1}{m}\sum_{i=1}^m \theta_i-\mu}>\varepsilon\right] 
+ \leq 2\exp(-2m\varepsilon^2) \]
+ Applying this to the sum over $h$:
+ \[ \sum_{h\in\mcl{H}}\mcl{D}^m\left\{S:\abs{L_S(h)-L_\mcl{D}(h)} > \varepsilon 
+ \right\} \leq\abs{\mcl{H}}2e^{-2m\varepsilon^2} \]
+ Now, we need to find $m$ for which the term on the right above is smaller or 
+ equal than $\delta$, so we fix
+ \[ m\geq \frac{\log(2\abs{\mcl{H}}/\delta)}{2\varepsilon^2} \]
+ So that
+ \[ \mcl{D}^m\left\{S:\abs{L_S(h)-L_\mcl{D}(h)} > \varepsilon \right\} 
+ \leq\delta \]
 \end{proof}
 
 \subsection{The Discretization Trick}
