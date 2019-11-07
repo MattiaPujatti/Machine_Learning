@@ -602,7 +602,55 @@ stops with all the sample points classified.
 \end{THEO}
 
 \begin{proof}
-	% FARE QUESTA PROOF
+	By the definition of the stopping condition, if the Perceptron stops it 
+	must have separated all the examples. We will show that if the Perceptron 
+	runs for $T$ iterations, then we must have $T\leq (RB)^2$.\\
+	Let's define $\vb{w}^*$ as the vector that achieve the $min$ definition of 
+	$B$ i.e. among all vectors that satisfy the constraint 
+	$y_i\sprod{w^*}{x_i}\geq 1$ for all $i$, $\vb{w}^*$ is the one with minimal 
+	norm. The idea of the proof is to show that after $T$ iterations, the 
+	cosine of the angle between $\vb{w}^*$ and $\vb{w}^{(T+1)}$ is at least 
+	$\sqrt{T}/RB$, namely
+	\[ 
+	\frac{\sprod{w^*}{w^{(T+1)}}}{\norm{\vb{w}^*}\norm{\vb{w}^{(T+1)}}}\leq\frac{\sqrt{T}}{RB}
+	 \]
+	By the Cauchy-Schwartz inequality, the left-hand side of the relation above 
+	is at most 1. Therefore, ths would imply that
+	\[ 1\geq\frac{\sqrt{T}}{RB} \quad\implies\quad T\leq (RB)^2 \]
+	which will conclude our proof.\\
+	
+	We will proceed in two parts:
+	\begin{enumerate}
+		\item We will show that, for the numerator, $\sprod{w^*}{w^{(T+1)}}\geq 
+		T$.\\
+		A first iteration $\vb{w}^{(1)}=(0,\dots,0)$ and therefore 
+		$\sprod{w^*}{w^{(1)}}=0$, while on iteration $t$, if we update using 
+		example $(\vb{x}_i,y_i)$ we have that
+		\[ 
+		\sprod{w^*}{w^{(T+1)}}-\sprod{w^*}{w^{(t)}}=\sprod{w^*}{w^{(t+1)}-w^{(t)}}
+		 = \sprod{w^*}{y_i\vb{x_i}} = y_i\sprod{w^*}{x_i}\geq 1 \]
+		Therefore, after performing $T$ iterations, we get
+		\[ \sprod{w^*}{w^{(T+1)}}=\sum_{t=1}^T 
+		\left(\sprod{w^*}{w^{(T+1)}-\sprod{w^*}{w^{(t)}}}\right)\geq T \]
+		\item Next, we will show that 
+		$\norm{\vb{w}^*}\norm{\vb{w}^{(T+1)}}\leq\sqrt{T}RB$.\\
+		We upper bound $\norm{\vb{w}^{(T+1)}}$ observing that, for each 
+		iteration $t$ we have that
+		\[ \norm{\vb{w}^{(T+1)}}^2=\norm{\vb{w}^{(t)}+y_i\vb{x_i}}^2 = 
+		\norm{\vb{w}^{(t)}}^2+2y_i\sprod{w^{(t)}}{x_i}+y_i^2\norm{\vb{x_i}}^2 
+		\leq\norm{\vb{w}^{(t)}}^2+R^2 \]
+		when the last inequality is due to the fact that example $i$ is 
+		necessarily such that $y_i\sprod{w^{(t)}}{x_i}\leq 0$, and the norm of 
+		$\vb{x_i}$ is at most $R$. Now, since $\norm{\vb{w}^{(1)}}^2=0$, if we 
+		use the previous relation recursively for $T$ iterations, we obtain that
+		\[ \norm{w^{(T+1)}}^2\leq TR^2\quad\implies\quad \sqrt{T}R \]
+	\end{enumerate}
+	Combining the relations we have just found, and using the fact that 
+	$\norm{\vb{w}^*}=B$, we obtain that
+	\[ 
+	\frac{\sprod{w^{(T+1)}}{w^*}}{\norm{\vb{w^*}}\norm{\vb{w}^{(T+1)}}}\geq\frac{T}{B\sqrt{T}R}=\frac{\sqrt{T}}{BR}
+	 \]
+	With this we can conclude our proof.
 \end{proof}
 Notes on Perceptron:
 \begin{itemize}
