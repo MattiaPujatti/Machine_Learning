@@ -519,14 +519,17 @@ To summarize the procedure of training a ML algorithm parametrized by some Hyper
 
 
 \chapter{Linear Predictors}
-In this chapter we will study the family of linear predictors, one of the most useful families of hypothesis classes. Many learning algorithms widely used in practice rely on linear predictors, because of their intuitiveness and ease of interpretation, as well as for their efficiency.\\
+In this chapter we will study the family of linear predictors, one of the most 
+useful families of hypothesis classes. Many learning algorithms widely used in 
+practice, rely on linear predictors, because of their intuitiveness and ease of 
+interpretation, as well as for their efficiency.\\
 We will introduce several hypothesis classes:
 \begin{itemize}
 	\item Halfspaces (classification)
 	\item Linear Regression (regression)
 	\item Logistic Regression (classification modeled as a regression problem)
 \end{itemize}
-and the algorithm to find the predictors:
+and the algorithms to find the predictors:
 \begin{itemize}
 	\item Linear Programming (for halfspaces)
 	\item Perceptron (for halfspaces)
@@ -553,7 +556,10 @@ We can give a (2D) geometric interpretation of this functions. As can be seen in
 	\item The weights determine the slope of the line
 	\item The weight vector is perpendicular to the line
 \end{itemize} 
-It may be more convenient to incorporate the bias $b$ into the vector $\vb{w}$ as an extra coordinate and adding an extra coordinate with a value of 1 to all $x\in\mcl{X}$; namely let $\vb{w}'=(b,w_1,\dots,w_d)\in\mathds{R}^{d+1}$ and let $\vb{x}'=(1,x_1,\dots,x_d)\in\mathds{R}^{d+1}$. Therefore:
+It may be more convenient to incorporate the bias $b$ into the vector $\vb{w}$ 
+as an extra coordinate with a value of 1 in all $x\in\mcl{X}$; namely let 
+$\vb{w}'=(b,w_1,\dots,w_d)\in\mathds{R}^{d+1}$ and let 
+$\vb{x}'=(1,x_1,\dots,x_d)\in\mathds{R}^{d+1}$. Therefore:
 \[ h_{\vb{w},b}(\vb{x})=\sprod{w}{x}+b=\sprod{w'}{x'} \]
 It follows that each affine function in $\mathds{R}^d$ can be rewritten as an 
 \textit{homogeneous} linear function in $\mathds{R}^{d+1}$ applied over the 
@@ -756,8 +762,8 @@ linear functions:
 \mcl{H}_{reg}=L_d=\left\{\vb{x}\to\sprod{w}{x}+b:\vb{w}\in\mathds{R}^d, 
 b\in\mathds{R}
  \right\} \]
-Next, we need to define a loss function for regression. While the 
-classification the definition of the loss is straightforward, as a predictor 
+Next, we need to define a loss function for regression. While in classification 
+problems the definition of the loss is straightforward, as a predictor 
 can guess or not the correct result, in the regression case there are solutions 
 that are "more correct" than others. We therefore need to define how much we 
 shall "penalize" for the discrepancy between the prediction $h(\vb{x})$ and the 
