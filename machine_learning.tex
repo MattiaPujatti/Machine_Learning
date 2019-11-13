@@ -476,6 +476,7 @@ But how should we choose a good hypothesis class? On the other hand we want to b
 \end{itemize}
 
 \section{Error Decomposition}
+\label{sec:err_dec}
 To answer these questions we decompose the true error of an $ERM_\mcl{H}$ predictor, $h_S$ into two components, as follows:
 \[ L_\mcl{D}(h_S)=\varepsilon_{app}+\varepsilon_{est} \]
 
@@ -1236,7 +1237,14 @@ methods can bring to overfitting).\\
 \end{example}
 
 \subsection{Grid Search for Multiple Parameters}
-What happen when 
+What happen when we have to estimate one (or more) parameters with value in 
+$\mathds{R}$?\\
+A possible way to solve this problem is starting with a rough grid of values 
+and and plot the corresponding model-selection curve. On the basis of the 
+curve, we should zoom into the correct (where "correct" is intended respect to 
+our problem) region and start again the procedure with a finer grid. However, 
+this research trough the grid does not always find the global optimal solution 
+for our parameters, but it can give a reasonable approximation.
 
 \subsection{Train-Validation-Test Split}
 In most practical applications, we split the available examples in 3 sets. The 
@@ -1248,6 +1256,126 @@ the true error of the learned predictor.\\
 Important: the test set is not involved in the choice of the best predictor 
 and, if for some reason we decide to change our best hypothesis, this test set 
 cannot be used again to estimate the true error.
+
+\section{K-Fold Cross Validation}
+The validation procedure described so far assumes that data is plentiful and 
+that we have the ability to sample a fresh validation set. But in reality data 
+are often scarce, and we would not "waste" data on validation. The k-fold cross 
+validation technique is designed to give an accurate estimate of the true error 
+without wasting too much data.\\
+In this procedure, the original training set is partitioned into $k$ subsets 
+(\textit{folds}) of size $m/k$. For each fold, the algorithm is trained on the 
+set built from the union of the other folds, and then the error of its output 
+is estimated using the starting fold. The final estimate of the true error is 
+computed as the average of the values found for each fold. A schematic 
+representation of the technique is figure \ref{ex:5_foldcross}.\\
+\begin{figure}[!h]
+	\centering
+	\includegraphics[scale=0.6]{images/5_fold_cross_validation.pdf}
+	\caption{Scheme of a 5-Fold Cross Validation}
+	\label{ex:5_foldcross}
+\end{figure}
+K-Fold Cross Validation is often used for model selection: in this case after 
+selecting the model, the final hypothesis is obtained from training on the 
+entire training set. A pseudo-code of the technique used for model selection is 
+given in box \ref{box:k_fold}: the procedure receives an input training set 
+$S$, a set 
+of possible parameter values $\Theta$, the number of folds $k$ and a learning 
+algorithm, and outputs the best parameter as well as the hypothesis trained by 
+this parameter on the entire training set.\\
+
+\begin{tcolorbox}
+	\begin{center}
+		\textbf{k-Fold Cross Validation for Model Selection}
+	\end{center}
+	\textbf{Input:}\\
+	\-\ training set $(\vb{x}_1,y_1),\dots,(\vb{x}_m,y_m)$\\
+	\-\ set of parameter values $\Theta$\\
+	\-\ learning algorithm $A$\\
+	\-\ number of folds $k$\\
+	 
+	\textbf{Partition:} $S$ in $S_1,S_2,\dots,S_k$\\
+	
+	\textbf{foreach} $\theta\in\Theta$\\
+	\-\ for $i=1,\dots,k:$\\
+	\-\ \quad $h_{i,\theta}=A(S/S_i;\theta)$ \qquad\qquad $\backslash*$ 
+	removing the i-th fold $*\backslash$\\
+	\-\ $error(\theta) = \frac{1}{k}\sum_{i=1}^k L_{S_i}(h_{i,\theta})$\\
+	
+	\textbf{output:}\\
+	\-\ $\theta^* = argmin_\theta\left[error(\theta)\right]$\\
+	\-\ $h_{\theta^*} = A(S;\theta^*)$
+\label{box:k_fold}
+\end{tcolorbox}
+
+\section*{Error Decomposition}
+Let's recall all the error we have define until now:
+\begin{itemize}
+	\item $L_\mcl{D}(h^*)$ is the \textit{approximation error}, i.e. the true 
+	error over the best hypothesis in $\mcl{H}$.
+	\item $L_\mcl{D}(h_S)-L_\mcl{D}(h^*)$ is the \textit{estimation error}, 
+	i.e. the difference between the true error of the best hypothesis in 
+	$\mcl{H}$ and the true error of the ERM solution.
+	\item $L_S(h_S)$ is the \textit{training error} i.e. the empirical error of 
+	the ERM solution on the training set $S$.
+	\item $L_V(h_S)$ is the \textit{validation error} i.e. the error over the 
+	validation set $V$ of the ERM solution.
+\end{itemize}
+Thank to this we can decompose the true error of the ERM solution as follows 
+(and that we have already described in section \ref{sec:err_dec}):
+\[ L_\mcl{D}(h_S) = L_\mcl{D}(h^*) L_\mcl{D}(h_S)-L_\mcl{D}(h^*) \]
+As well with the training and the validation error:
+\[ L_\mcl{D}(h_S) = (L_\mcl{D}(h_S)-L_V(h_S)) + (L_V(h_S)-L_S(h_S)) + L_S(h_S) 
+\]
+
+
+\section{When Learning Fails}
+Consider the following scenario: you were given a learning task and have 
+approached it with a choice of an hypothesis class, a learning algorithm, and 
+parameters. You used a validation set to tune the parameters and tested the 
+learned predictor on a test set. The test result, unfortunately, turn out to be 
+unsatisfactory. What went wrong, then, and what should you do next?\\
+There are many elements that can be changed to gain better results, for example:
+\begin{itemize}
+	\item Get a larger sample
+	\item Change the hypothesis class (enlarging it, reducing it or completely 
+	changing the parameters or the class itself)
+	\item Change the feature representation of the data
+	\item Change the optimization algorithm used to apply the learning rule
+\end{itemize}
+In order to find the best remedy, it is essential first to understand the cause 
+of the bad performance.
+
+
+
+
+To summarize the discussion, the following steps should be applied:
+\begin{enumerate}
+	\item If learning involves parameter tuning, plot the model-selection curve 
+	to make sure that they have been tuned appropriately.
+	\item If the training error is excessively large, consider enlarging the 
+	hypothesis class, completely change it, or change the feature 
+	representation of the data.
+	\item If the training error is small, plot learning curves and try to 
+	deduce from them if the problem is the estimation error or the 
+	approximation one.
+	\item If the approximation error seems to be small enough, try to obtain 
+	more data. If it is not possible, consider reducing the complexity of the 
+	hypothesis class.
+	\item If the approximation error seems to be large as well, try to change 
+	the hypothesis class or the feature representation of the data completely.
+\end{enumerate}
+
+
+
+
+
+
+
+
+
+
+
 
 
 
