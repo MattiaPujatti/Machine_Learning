@@ -1327,6 +1327,14 @@ Thank to this we can decompose the true error of the ERM solution as follows
 As well with the training and the validation error:
 \[ L_\mcl{D}(h_S) = (L_\mcl{D}(h_S)-L_V(h_S)) + (L_V(h_S)-L_S(h_S)) + L_S(h_S) 
 \]
+However, it is more difficult to estimate the approximation error of the class, 
+and so we give such an error decomposition, that let us to focus on training 
+and validation error. The first term of this decomposition, 
+$L_\mcl{D}(h_S)-L_V(h_S)$, can easily bounded using theorem 
+\ref{th:validation_theorem}; when the second one, $L_V(h_S)-L_S(h_S)$, tends to 
+be large we can say that our algorithm suffers from "overfitting"; when the 
+last term, the empirical risk $L_S(h_S)$, is large, we can say that this is a 
+case of "underfitting". 
 
 
 \section{When Learning Fails}
@@ -1344,10 +1352,41 @@ There are many elements that can be changed to gain better results, for example:
 	\item Change the optimization algorithm used to apply the learning rule
 \end{itemize}
 In order to find the best remedy, it is essential first to understand the cause 
-of the bad performance.
-
-
-
+of the bad performance. Remember that the approximation error does not depend 
+on the sample size or on the algorithm being used, but only on the distribution 
+$\mcl{D}$ and on the hypothesis class $\mcl{H}$. Therefore, if the 
+approximation error is large, it will not help us to enlarge the training set 
+size, and it also does not make sense to reduce the hypothesis class. What can 
+be beneficial in this case is to enlarge the hypothesis class or completely 
+change it (if we have some alternative prior knowledge in the form of a 
+different hypothesis class). The estimation error of the class, instead, does 
+depend on the sample size. Therefore, if we have large estimation error we can 
+make an effort to obtain more training examples. We can also consider reducing 
+the hypothesis class. However, it doesn't make sense to enlarge the hypothesis 
+class in that case.\\
+One possible way to distinguish between over and underfitting and estimate di 
+approximation error $L_\mcl{D}(h^*)$ is by plotting the so called 
+\textit{learning curves}. To produce a learning curve we train the algorithm on 
+prefixes of data of increasing sizes (for example we can first train it on 
+$10\%$ of data, then on $20\%$ and so on). For each of these data subgroup we 
+calculate the training error and the validation one (on a predefine validation 
+set), and then we plot it together as in figure \ref{fig:learning_curves}.
+\begin{figure}[!h]
+	\centering
+	\includegraphics[scale=0.7]{images/learning_curves.pdf}
+	\caption{Example of learning curves. Left: scenario in which the number of 
+	examples is always smaller than the VC-dimension of the problem. Right: 
+	scenario in which the approximation error is zero and the number of 
+	examples is larger than the VC-dimension.}
+	\label{fig:learning curves}
+\end{figure}
+Such curves help us to distinguish the two aforementioned scenarios. In 
+general, as long as the approximation error is greater than zero we expect the 
+training error to grow with the sample size, as a larger amount of data points 
+makes it harder to provide an explanation for all of them. On the other hand, 
+the validation error tends to decrease with the increase in the sample size. If 
+the VC-dimension is finite, when the sample size goes to infinity, the 
+validation and train errors converge to the approximation error.\\
 
 To summarize the discussion, the following steps should be applied:
 \begin{enumerate}
@@ -1367,7 +1406,7 @@ To summarize the discussion, the following steps should be applied:
 \end{enumerate}
 
 
-
+\chapter{Regularization and Stability}
 
 
 
