@@ -1408,11 +1408,39 @@ To summarize the discussion, the following steps should be applied:
 
 \chapter{Regularization and Stability}
 
+In this chapter we are gonna introduce a new learning paradigm, called 
+\textbf{Regularized Loss Minimization}, or RLM, for short. In RLM we minimize 
+the sum of the empirical risk and a regularization function, that quantifies 
+the complexity of hypotheses. Another view or regularization is as a 
+\textbf{stabilizer} of the learning algorithm. An algorithm is considered 
+stable if a slight change of the input does not change the output much.
 
+\section{Regularized Loss Minimization}
+RLM is a learning rule in which we jointly minimize the empirical risk and a 
+regularization function. Formally, given an hypothesis $h$, characterized by a 
+vector of parameters $\vb{w}=(w_1,\dots,w_d)^T\in\mathds{R}^d$ (for example the 
+coefficients of a linear regression or the weights of a neural network), a 
+\textit{regularization function} is a map $R:\mathds{R}^d\to\mathds{R}$, 
+function of $\vb{w}$, for which the RLM rule outputs an hypothesis in 
+\[ \underset{\vb{w}}{argmin}\left(L_S(\vb{w})+R(\vb{w})\right) \]  
+where $L_S(\vb{w})$ is the standard loss and $R(\vb{w})$ is a regularization 
+term that measures, in some way, the "complexity" of the found solution, it 
+balances between a low empirical risk and aiming at less complex hypotheses.\\
+There are many possible regularization functions that one can use, reflecting 
+some prior knowledge about the problem. One of the most simple regularization 
+functions (that make use of the $\ell_2$ norm), known as \textbf{Tikhonov 
+Regularization}, is
+\[ R(\vb{w})=\lambda\norm{\vb{w}}^2=\lambda\sum_{i=1}^d w_i^2 \]
+where $\lambda>0$ is a scalar.\\
+Using this formula, the learning rule becomes
+\[ 
+A(S)=\underset{\vb{w}}{argmin}\left(L_S(\vb{w})+\lambda\norm{\vb{w}}^2\right) \]
+One interpretation sees the norm $\norm{\vb{w}}^2$ as a measurement of the 
+complexity of the hypothesis class defined by the vector $\vb{w}$, and the 
+parameter $\lambda$ as a coefficient used to control the trade-off between a 
+low empirical risk and an high complexity (risk of overfitting).
 
-
-
-
+\subsection{Ridge Regression}
 
 
 
