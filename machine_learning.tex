@@ -1378,7 +1378,7 @@ set), and then we plot it together as in figure \ref{fig:learning_curves}.
 	examples is always smaller than the VC-dimension of the problem. Right: 
 	scenario in which the approximation error is zero and the number of 
 	examples is larger than the VC-dimension.}
-	\label{fig:learning curves}
+	\label{fig:learning_curves}
 \end{figure}
 Such curves help us to distinguish the two aforementioned scenarios. In 
 general, as long as the approximation error is greater than zero we expect the 
@@ -1441,8 +1441,88 @@ parameter $\lambda$ as a coefficient used to control the trade-off between a
 low empirical risk and an high complexity (risk of overfitting).
 
 \subsection{Ridge Regression}
+Applying the ERM rule with Tikhonov regularization to linear regression with the square loss, we obtain the following learning rule:
+\[ \underset{\vb{w}\in\mathds{R}^d}{argmin} \left(\lambda\norm{\vb{w}}^2+\frac{1}{m}\sum_{i=1}^m\frac{1}{2}(\sprod{w}{x_i}-y_i)^2 \right) \]
+Performing linear regression using this equation, i.e. find the vector $\vb{w}$ that minimizes the squared loss, is called \textbf{Ridge Regression}.\\
+To solve it we have to compare the gradient of the object to zero, obtaining the set of linear equations:
+\[ \left(2\lambda m\mathds{1}+A\right)\vb{w}=\vb{b} \]
+where $A$ and $\vb{b}$ are defined as
+\[ A=\left(\sum_{i=1}^m \vb{x_i}{x_i}^T \right) \qquad\text{and}\qquad \vb{b}=\sum_{i=1}^m y_i\vb{x_i} \]
+Since $A$ is a positive semidefinite matrix, the matrix $2\lambda m\mathds{1} + A$ has all its eigenvalues bounded by $2\lambda m$. Hence, this matrix is invertible, and the solution to Ridge regression becomes:
+\[ \vb{w}=\left(2\lambda m\mathds{1}+A\right)^{-1}\vb{b} \] 
+
+\section{Stable rules do not overfit}
+Intuitively, a learning algorithm is stable if a small change of the input to it does not change the output much. But what "a small change on the input" means?\\
+Let's start replacing only one sample! Let $A$ be an algorithm, $S=(z_1,\dots,z_m)$ be a training set of $m$ samples, and let $A(S)$ denote the output of $A$. Now, let's add to $S$ an additional example $z'$, and define $S^{(i)}=(z_1,\dots,z_{i-1},z',z_{i+1},\dots,z_m)$. We want to measure the consequences of this small addition on the output of $A$, and we can do it by comparing the loss of the hypothesis $A(S)$ to the loss of $S(A^{(i)})$ on $z_i$. Intuitively, a good learning algorithm will have $\ell(A(S),z_i)-\ell(A(S^{(i)}),z_i)\geq 0$, since in the first term the algorithm does not observe the example $z_i$. If this difference is found quite large, we suspect that the learning algorithm might overfit. This is because the learning algorithm drastically changes its prediction on $z_i$ if it observes it in the training set. This is formalized in the following theorem:
+\begin{theorem}
+	Let $\mcl{D}$ be a distribution. Let $S=(z_1,\dots,z_m)$ be an i.i.d. sequence of examples and let $z'$ be another i.i.d. example. Let $U(m)$ be the uniform distribution over $[m]$. Then, for any learning algorithm
+	\[ \underset{S\sim\mcl{D}^m}{\mathds{E}}\left[L_\mcl{D}(A(S))-L_S(A(S))\right] = \underset{(S,z')\sim\mcl{D}^{m+1},i\sim U(m)}{\mathds{E}}\left[\ell(A(S^{(i)},z_i))-\ell(A(S,z_i))\right] \]
+\end{theorem}
+\begin{proof}
+	Since $S$ and $z'$ are both drawn i.i.d. from $\mcl{D}$, we have that for every $i$:
+	\[ \underset{S}{\mathds{E}}\left[L_\mcl{D}(A(S))\right] =  \underset{S,z'}{\mathds{E}}\left[\ell(A(S),z')\right] = \underset{S,z'}{\mathds{E}}\left[\ell(A(S^{(i)}),z_i)\right] \]
+	On the other hand, we can write 
+	\[ \underset{S}{\mathds{E}}\left[L_S(A(S))\right] = \underset{S,i}{\mathds{E}}\left[\ell(A(S),z_i)\right] \]
+	Combining the two equations we conclude our proof.
+\end{proof}
+When the right-side of equation in the previous theorem is small, we say that $A$ is \textit{stable} algorithm. Formally:
+\begin{definition} (\textbf{On-Average-Replace-One-Stable})
+	Let $\varepsilon:\mathds{N}\to\mathds{R}$ be a monotonically decreasing function. We say that a learning algorithm $A$ is \textit{OAROS} with rate $\varepsilon(m)$ if for every distribution $\mcl{D}$ 
+	\[ \underset{(S,z')\sim\mcl{D}^{m+1},i\sim U(m)}{\mathds{E}}\left[\ell(A(S^{(i)},z_i))-\ell(A(S,z_i))\right]\leq\varepsilon(m) \]
+	\label{def:OAROS}	
+\end{definition}
+The theorem written above tells us that a learning algorithm that does not overfit is not necessary a good learning algorithm (for example, an algorithm that always outputs the same hypothesis). One should find an algorithm that both fit the training set and at the same time be stable. We will see that this will be exactly the role of the parameter $\lambda$ of the RLM rule. 
+
+\section{Tikhonov Regularization as a Stabilizer}
+In the previous section we saw that stable rules don't overfit. In this section we will show that applying the RLM rule with Tikhonov regularization, $\lambda\norm{\vb{w}}^2$, leads to a stable algorithm.\\
+The main property of the Tikhonov regularization that we rely is on is that it makes the objective of RLM \textit{strongly convex}, as defined in the following:
+\begin{definition} (\textbf{Strongly Convex Functions})
+	A function $f$ is $\lambda$-strongly convex if for all $\vb{w}$,$\vb{u}$, and $\alpha\in(0,1)$ we have
+	\[ f(\alpha\vb{w}+(1-\alpha)\vb{u})\leq\alpha f(\vb{w})+(1-\alpha)f(\vb{u})-\frac{\lambda}{2}\alpha(1-\alpha)\norm{w-u}^2 \]	
+\end{definition}
+Clearly, every convex function is 0-strongly convex. An example of this property can be found in figure \ref{fig:lambda_convex}.
+\begin{figure}[!h]
+	\centering
+	\includegraphics[scale=0.5]{images/lambda_convex.pdf}
+	\caption{Strongly convex function}
+	\label{fig:lambda_convex}
+\end{figure}
+The following lemma resume the important properties of strong convexity.
+\begin{lemma}
+	\begin{enumerate}
+		\item The function $f(\vb{w})=\lambda\norm{\vb{w}}^2$ is $2\lambda$ strongly convex.
+		\item If $f$ is $\lambda$-strongly convex and $g$ is convex, then $f+g$ is $\lambda$-strongly convex.
+		\item If $f$ is $\lambda$-strongly convex and $\vb{u}$ is a minimizer of $f$, then, for any $\vb{w}$
+		\[ f(\vb{w})-f(\vb{u})\geq\frac{\lambda}{2}\norm{w-u}^2 \]
+	\end{enumerate}
+\end{lemma}
 
 
+\subsection{Lipschitz Loss}
+Recall the definition of Lipschitzness.
+\begin{definition} (\textbf{Lipschitzness})\\
+	Let $C\subset\mathds{R}^d$. A function $f:\mathds{R}^d\to\mathds{R}^k$ is $\rho$-Lipschitz over $C$ if $\forall\;\vb{w_1},\vb{w_2}\in C$ we have that
+	\[ \norm{f(\vb{w_1}-f(\vb{w_2}))}\leq\norm{\vb{w_1}-\vb{w_2}} \]
+\end{definition}
+Intuitively, we are asking to a function to not change too much.\\
+If a function is derivable and its derivative is bounded by $\rho$ at any points, then this function is $\rho$-Lipschitz.\\
+Given such definition, the following theorem holds:
+\begin{theorem}
+	Assume that the loss function is convex and $\rho$-Lipschitz continuous. Then, the RLM rule with regularizer $\lambda\norm{\vb{w}}^2$ is OAROS (\ref{def:OAROS}) with rate $\frac{2\rho^2}{\lambda m}$. This means that, for the RLM rule:
+	\[ \underset{S\sim\mcl{D}^m}{\mathds{E}}\left[L\mcl{D}(A(S))-L_S(A(S))\right]\leq\frac{2\rho^2}{\lambda m} \]
+\end{theorem}
+
+\section{Fitting-Stability Tradeoff}
+We can rewrite the expected risk of a learning algorithm as
+\[ \underset{S}{\mathds{E}}\left[L_\mcl{D}(A(S))\right] = \underset{S}{\mathds{E}}\left[L_S(A(S))\right] + \underset{S}{\mathds{E}}\left[L_\mcl{D}(A(S))-L_S(A(S))\right] \]
+The first term reflects how well $A(S)$ fits the training set while the second term reflects the difference between the true and empirical risks of $A(S)$, that, as we already shown, is equivalent to the stability of $A$. Since our goal is to minimize the risk of the algorithm, we need the sum of both terms to be small.\\
+We can show that the stability term decreases as the regularization parameter, $\lambda$, increases. On the other hand, the empirical risk increases with $\lambda$. We therefore face a tradeoff between fitting and overfitting, that is quite similar to the bias-complexity tradeoff we discussed in a previous chapter.\\
+With the following theorem (no proof) we derive bounds on the empirical risk term for the RLM rule.
+\begin{theorem}
+	Assume that the loss function is convex and $\rho$-Lipschitz. Then, the RLM rule with the regularization function $\lambda\norm{\vb{w}}^2$ satisfies
+	\[ \forall\vb{w}^*,\quad \underset{S}{\mathds{E}}\left[L_\mcl{D}(A(S))\right]\leq L_\mcl{D}(\vb{w}^*)+\lambda\norm{\vb{w}^*}^2+\frac{2\rho^2}{\lambda m} \]
+\end{theorem}
+This bound is often called an \textit{oracle inequality}: if we think of $\vb{w}^*$ as an hypothesis with low risk, the bound tells us how many examples are needed so that $A(S)$ will be almost as good as $\vb{w}^*$, had we known the norm of $\vb{w}^*$. In practice, however, we usually do not know the norm of $\vb{w}^*$, so it is more convenient to tune $\lambda$ on the basis of a validation set.
 
 
 
