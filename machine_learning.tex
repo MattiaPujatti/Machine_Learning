@@ -1509,7 +1509,7 @@ If a function is derivable and its derivative is bounded by $\rho$ at any points
 Given such definition, the following theorem holds:
 \begin{theorem}
 	Assume that the loss function is convex and $\rho$-Lipschitz continuous. Then, the RLM rule with regularizer $\lambda\norm{\vb{w}}^2$ is OAROS (\ref{def:OAROS}) with rate $\frac{2\rho^2}{\lambda m}$. This means that, for the RLM rule:
-	\[ \underset{S\sim\mcl{D}^m}{\mathds{E}}\left[L\mcl{D}(A(S))-L_S(A(S))\right]\leq\frac{2\rho^2}{\lambda m} \]
+	\[ \underset{S\sim\mcl{D}^m}{\mathds{E}}\left[L_\mcl{D}(A(S))-L_S(A(S))\right]\leq\frac{2\rho^2}{\lambda m} \]
 \end{theorem}
 
 \section{Fitting-Stability Tradeoff}
@@ -1524,6 +1524,79 @@ With the following theorem (no proof) we derive bounds on the empirical risk ter
 \end{theorem}
 This bound is often called an \textit{oracle inequality}: if we think of $\vb{w}^*$ as an hypothesis with low risk, the bound tells us how many examples are needed so that $A(S)$ will be almost as good as $\vb{w}^*$, had we known the norm of $\vb{w}^*$. In practice, however, we usually do not know the norm of $\vb{w}^*$, so it is more convenient to tune $\lambda$ on the basis of a validation set.
 
+
+\chapter{Stochastic Gradient Descent}
+Till now, we have seen that the goal of our learning algorithm is to find a predictor that minimize the risk function $L_\mcl{D}(h) = \mathds{E}_{z\sim\mcl{D}}\left[\ell(h,z)\right]$. But we can't directly find the mathematical minimum of such function, since it depends on the unknown distribution $\mcl{D}$.\\
+For this reason, in this chapter we will discuss a new learning method, called \textit{Stochastic Gradient Descent} (SGD), that try to minimize directly the risk function $L_\mcl{D}(\vb{w})$ using a gradient descent procedure, an iterative optimization
+procedure in which at each step we improve the solution by taking a step along the
+negative of the gradient of the function to be minimized at the current point.\\
+Of course, in our case, since we do not know $\mcl{D}$ we can't even know the gradient of $L_\mcl{D}$: SGD circumvents this problem by allowing the optimization procedure to take a step along a random direction, as long as the expected value of the direction is the negative of the gradient. We will see that this trick is relatively simple.\\
+The advantage of SGD, in the context of convex learning problems, over the
+regularized risk minimization learning rule is that SGD is an efficient algorithm that
+can be implemented in a few lines of code, yet still enjoys the same sample complex-
+ity as the regularized risk minimization rule.
+
+\section{Gradient Descent} 
+Before we describe the stochastic gradient descent method, we would like to
+describe the standard gradient descent approach for minimizing a differentiable
+convex function $f(\vb{w})$.\\
+The gradient of a differential function $f:\mathds{R}^d\to\mathds{R}$ is simply the vector of the derivatives:
+\[ \grad{f} = \left(\pdv{f(\vb{w})}{w_1},\dots,\pdv{f(\vb{w})}{w_d} \right) \]
+As we know from math theory, the gradient is the vector that points in the direction in which the function $f$ increases itself, in a region close to $\vb{w}$.\\
+We start from an initial value, for example $\vb{w}^{(1)}=\vb{0}$, then, at each iteration, we take a step in the direction of the negative of the gradient at the current point. Update step:
+\[ \vb{w}^{(t+1)}=\vb{w}^{(t)}+\eta\grad{f}(\vb{w}^{(t)}) \]
+where $\eta>0$ is a parameter we will discuss of later. Intuitively, since the gradient points in the direction of the greatest rate of increase of $f$ around $\vb{w}^{(t)}$, the algorithm makes a small step in the opposite direction, thus decreasing the value of the
+function. Eventually, after $T$ iterations, the algorithm outputs the averaged vector,
+$\vb{\bar{w}}=\frac{1}{T}\sum_{t=1}^T \vb{w}^{(t)}$. The output could also be the last vector, $\vb{w}^{(T)}$ (favourite solution of the professor), or the best performing vector, $\underset{t\in[T]}{argmin} f(\vb{w}^{(t)})$.\\
+Another way to motivate Gradient Descent technique and the update rule above is by relying on Taylor first order approximation, that is (calculated in $\vb{w}$) $f(\vb{u}) = f(\vb{w}) + \sprod{u-w}{\grad{f}(w)}$. If $f$ is convex, this approximation lower bounds $f$:
+\[ f(\vb{u}) \leq f(\vb{w}) + \sprod{u-w}{\grad{f}(w)} \]
+
+\subsection{Gradient Descent for Convex-Lipschitz Functions}
+To analyze the convergence rate of the GD algorithm, we limit ourselves to the case
+of convex-Lipschitz functions, that is the easiest one. We can write the following lemma:
+\begin{lemma}
+	Let $f$ be a convex, $\rho$-Lipschitz function, and let $\vb{w}^*\in argmin_{\vb{w}:\norm{\vb{w}}\leq B f(\vb{w})}$. If we run the GD algorithm on $f$ for $T$ steps with $\eta=\sqrt{\frac{B^2}{\rho^2 T}}$, then the output vector $\vb{\bar{w}}$ satisfies
+	\[ f(\vb{\bar{w}})-f(\vb{w}^*) \leq \frac{B\rho}{\sqrt{T}} \]
+	Furthermore, for every $\varepsilon>0$, to achieve $f(\vb{\bar{w}})-f(\vb{w}^*) \leq\varepsilon$, it suffices to run the algorithm for a number of iterations
+	\[ T\geq\frac{B^2\rho^2}{\varepsilon^2}  \]
+\end{lemma}
+
+\section{Stochastic Gradient Descent}
+In \textit{stochastic gradient descent} (SGD) we do not require the update direction to be based exactly on the gradient. Instead, we allow the direction to be a random vector and
+only require that its expected value at each iteration will equal the gradient direction. Computing the gradient at every step, in fact, can be computationally demanding, so we should avoid it.\\
+The explicit implementation of this algorithm is written in box \ref{box:SGD}, while a graphical comparison between the two techniques described until now is represented in figure \ref{fig:ex_GD}.
+
+\begin{tcolorbox}
+	\begin{center}
+		\textbf{Stochastic Gradient Descent (SGD) for minimizing $f(\vb{w})$}
+	\end{center}
+	\textbf{Input:}\\
+	\-\ training set $(\vb{x}_1,y_1),\dots,(\vb{x}_m,y_m)$\\
+	\-\ set of parameter values $\Theta$\\
+	\-\ learning algorithm $A$\\
+	\-\ number of folds $k$\\
+	
+	\textbf{Partition:} $S$ in $S_1,S_2,\dots,S_k$\\
+	
+	\textbf{foreach} $\theta\in\Theta$\\
+	\-\ for $i=1,\dots,k:$\\
+	\-\ \quad $h_{i,\theta}=A(S/S_i;\theta)$ \qquad\qquad $\backslash*$ 
+	removing the i-th fold $*\backslash$\\
+	\-\ $error(\theta) = \frac{1}{k}\sum_{i=1}^k L_{S_i}(h_{i,\theta})$\\
+	
+	\textbf{output:}\\
+	\-\ $\theta^* = argmin_\theta\left[error(\theta)\right]$\\
+	\-\ $h_{\theta^*} = A(S;\theta^*)$
+	\label{box:SGD}
+\end{tcolorbox}
+
+\begin{figure}[!h]
+	\centering
+%	\includegraphics[scale=1]{images/}
+	\caption{An illustration of the gradient descent algorithm (left) and the stochastic
+		gradient descent algorithm (right). The function to be minimized is $25(x + 6)^2 + (y − 8)^2$. For the stochastic case, the solid line depicts the averaged value of $\vb{w}$.}
+	\label{fig:ex_GD}
+\end{figure}
 
 
 
