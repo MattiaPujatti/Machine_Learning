@@ -1571,32 +1571,32 @@ The explicit implementation of this algorithm is written in box \ref{box:SGD}, w
 		\textbf{Stochastic Gradient Descent (SGD) for minimizing $f(\vb{w})$}
 	\end{center}
 	\textbf{Input:}\\
-	\-\ training set $(\vb{x}_1,y_1),\dots,(\vb{x}_m,y_m)$\\
-	\-\ set of parameter values $\Theta$\\
-	\-\ learning algorithm $A$\\
-	\-\ number of folds $k$\\
+	\-\ Scalar $\eta>0$\\
+	\-\ Integer $T>0$\\
 	
-	\textbf{Partition:} $S$ in $S_1,S_2,\dots,S_k$\\
+	\textbf{for} $t=1,2,\dots,T$\\
+	\-\ choose $\vb{v_t}$ from a random distribution such that $\mathds{E\left[\vb{v_t}|\vb{w}^{(t)} \right]\in\partial f(\vb{w}^{(t)})}$\\
+	\-\ update: $\vb{w}^{(t+1)} = \vb{w}^{(t)}-\eta\vb{v_t}$ \\
 	
-	\textbf{foreach} $\theta\in\Theta$\\
-	\-\ for $i=1,\dots,k:$\\
-	\-\ \quad $h_{i,\theta}=A(S/S_i;\theta)$ \qquad\qquad $\backslash*$ 
-	removing the i-th fold $*\backslash$\\
-	\-\ $error(\theta) = \frac{1}{k}\sum_{i=1}^k L_{S_i}(h_{i,\theta})$\\
+	\textbf{output:} \qquad$\vb{\bar{w}} = \frac{1}{T}\sum_{t=1}^T \vb{w}^{(t)}$ \qquad  or \qquad $\vb{\bar{w}}=\vb{w}^{(T)}$\qquad   or  \qquad $\vb{\bar{w}} = \frac{1}{T-T_0}\sum_{t=T_0}^T\vb{w}^{(t)}$
 	
-	\textbf{output:}\\
-	\-\ $\theta^* = argmin_\theta\left[error(\theta)\right]$\\
-	\-\ $h_{\theta^*} = A(S;\theta^*)$
 	\label{box:SGD}
 \end{tcolorbox}
 
 \begin{figure}[!h]
 	\centering
-%	\includegraphics[scale=1]{images/}
+	\includegraphics[scale=1]{images/ex_gradient_descent.pdf}
 	\caption{An illustration of the gradient descent algorithm (left) and the stochastic
-		gradient descent algorithm (right). The function to be minimized is $25(x + 6)^2 + (y − 8)^2$. For the stochastic case, the solid line depicts the averaged value of $\vb{w}$.}
+		gradient descent algorithm (right). The function to be minimized is $25(x+6)^2+(y-8)^2$. For the stochastic case, the solid line depicts the averaged value of $\vb{w}$.}
 	\label{fig:ex_GD}
 \end{figure}
+
+\section{SGD vs GD}
+Why should we use Stochastic Gradient Descent method respect to the other one, to solve machine learning problems?\\
+We have seen the method of empirical risk minimization, where we minimize the
+empirical risk, $L_S(\vb{w})$, as an estimate to minimizing $L_\mcl{D}(\vb{w})$. \textit{SGD} allows us to take a different approach and minimize $L_\mcl{D}(\vb{w})$ directly.\\
+Since we do not know the distribution $\mcl{D}$, we cannot simply calculate $\grad{L_\mcl{D}}(\vb{w}^{(t)})$ and minimize it with the $GD$ method. And then this technique is very expensive from a computational point of view, since it needs to process all the training data at each iteration, because the gradient has to be computed for every couple $(\vb{x}_i,y_i\in S)$. And this becomes a problem for large dataset, so it isn't the best method for real world ML problems.\\
+On the other hand $SGD$ is much faster, since at each step only one sample (taken randomly) is used for the computation and, in theory we could get the final solution at the first steps too! So, as many other stochastic methods, its efficiency comes up for complex problems and large datasets. Anyway also this algorithm has some "problems". As we can see in picture \ref{fig:ex_GD} the "trajectory" drown by the method is "noisier" than the other, and there is a possibility of jumping out from local minima. For this reason we often look for some approaches to stabilize the solution, for example taking the average of a set of final iterations (or all of these), to take into account fluctuations phenomena.\\
 
 
 
