@@ -21,6 +21,7 @@
 
 \newcommand\mcl[1]{\mathcal{#1}}
 \newcommand\sprod[2]{\langle \vb{#1},\vb{#2}\rangle}
+\newcommand\EV[1]{\mathds{E}\left[{#1}\right]}
 
 \begin{document}
 \begin{flushleft}
@@ -1597,7 +1598,7 @@ The explicit implementation of this algorithm is written in box \ref{box:SGD}, w
 	\label{fig:ex_GD}
 \end{figure}
 
-\section{SGD vs GD}
+\subsection{SGD vs GD}
 Why should we use Stochastic Gradient Descent method respect to the other one, to solve machine learning problems?\\
 We have seen the method of empirical risk minimization, where we minimize the
 empirical risk, $L_S(\vb{w})$, as an estimate to minimizing $L_\mcl{D}(\vb{w})$. \textit{SGD} allows us to take a different approach and minimize $L_\mcl{D}(\vb{w})$ directly.\\
@@ -1652,7 +1653,61 @@ learning convex-Lipschitz-bounded problems. In fact, we can prove that:
 There is also a variant of $SGD$ that enjoys a faster convergence rate for problems in which the objective function is strongly convex, where the definition of this strongly convexity has been written in \ref{def:strongly_convex}. In particular, we can show (but we won't) that it is a good strategy to use an adaptive step size of value $\eta_t=\frac{1}{\lambda t}$.\\
 But there is a particular case of strongly convex function that can be very useful for us, that is the Regularized Loss Minimization (RLM): we can, in fact, rewrite the associated optimization problem \ref{eq:RLM} (dividing, for convenience, $\lambda$ by 2) as 
 \[ \min_{\vb{w}}\left(\frac{\lambda}{2}\norm{\vb{w}}^2+L_S(\vb{w})\right) \]
-Then, defining $f(\vb{w})=\frac{\lambda}{2}\norm{\vb{w}}^2+L_S(\vb{w})$, we notice that $f$ is a $2\frac{\lambda}{2}=\lambda$-strongly function, and for this reason the problem can be solved in a efficient way with learning rate $\eta_t=\frac{1}{\lambda t}$  
+Then, defining $f(\vb{w})=\frac{\lambda}{2}\norm{\vb{w}}^2+L_S(\vb{w})$, we notice that $f$ is a $2\frac{\lambda}{2}=\lambda$-strongly function, and for this reason the problem can be solved in a efficient way with learning rate $\eta_t=\frac{1}{\lambda t}$. To analyze the resulting algorithm, we first rewrite the update rule:
+\[ \begin{aligned} \vb{w}^{(t+1)} &= \vb{w}^{(t)}+\frac{1}{\lambda t}\left(\lambda\vb{w}^{(t)}+\vb{v_t}\right) = \left(1-\frac{1}{t}\right)\vb{w}^{(t)}-\frac{1}{\lambda t}\vb{v_t}=\frac{t-1}{t}\vb{w}^{(t)} -\frac{1}{\lambda t}\vb{v_t} =\\
+&= \frac{t-1}{t}\left(\frac{t-2}{t-1}\vb{w}^{(t-1)}-\frac{1}{\lambda(t-1)}\vb{v_{t-1}}\right) -\frac{1}{\lambda t}\vb{v_t} = -\frac{1}{\lambda t}\sum_{i=1}^t\vb{v_i}
+\end{aligned} \]
+
+Moreover, if loss is a $\rho$-Lipschitz function, there is a theorem (that we will not discuss) that guarantee that after $T$ iterations:
+\[ \EV{f(\vb{\bar{w}})}-f(\vb{w^*})\leq\frac{4\rho^2}{\lambda t}(1+\log(T) \]
+
+\subsection*{SGD: Issues}
+ The selection of the learning rate $\eta$ is a critical point:
+\begin{itemize}
+	\item if $\eta$ is too small, the optimization will be stable, but the convergence can be very slow.
+	\item if $\eta$ is too large, the convergence is faster, but the optimization can become very unstable.
+	\item the various parameters have different behaviors and the learning rate could be too fast for some and too slow for others.
+\end{itemize}
+One simple solution to this problem can be the use of \textit{adaptive learning rates}, that are variables that change during the learning process to better approximate the correct solution. Anyway, there aren't general rules according which the parameter should change: we could pre-define a schedule, or we could tell the program to reduce $\eta$ every time the loss becomes too small. However these approaches requires rules and thresholds to be defined in advance and thus are difficult to adapt to different problems. Sometimes is also better to not update all parameters to the same extent, but perform a larger update for some, and smaller for others.
+
+\subsection*{Momentum}
+The stochastic gradient descent method has troubles (i.e. it oscillates) in areas where he surface curves much more steeply in one dimension than in another (which are common around local maxima or minima). In this case the correction can be applied modifying directly the update rule, adding a new \textit{momentum} term, that helps accelerating SGD in the relevant direction avoiding oscillations. An example of corrected updating rule is:
+\[ \vb{v_t} = \gamma\vb{v_{t-1}}+\eta\grad_\theta{\vb{J}(\theta)} \]
+where $\gamma$ is the momentum parameter, and it is usually set at 0.9.\\
+Using momentum is like pushing a ball down a hill. The ball accumulates momentum as it rolls downhill, becoming faster and faster on the way. The same thing happens to our parameter updates: the momentum term increases for dimensions whose gradients point in the same directions and reduces updates for dimensions whose gradients change directions. As a result, we gain faster convergence and reduced oscillation.
+
+\subsection*{Advanced SGD Schemes}
+\begin{itemize}
+	\item \textbf{Adagrad}: adapts the learning rate for each parameter independently.
+	\begin{itemize}
+		\item It performs smaller updates (i.e. low learning rates) for parameters associated
+		with frequently occurring features.
+		\item It performs larger updates (i.e. high learning rates) for parameters associated
+		with infrequent features.
+	\end{itemize}
+	\item \textbf{Adadelta} and \textbf{RMSprop}: improved versions of Adagrad
+	\item \textbf{Adam}: Adaptive Moment Estimation
+	\begin{itemize}
+		\item It also computes adaptive learning rates for each parameter.
+		\item It combines ideas from Adagrad and momentum.
+		\item Whereas momentum can be seen as a ball running down a slope, Adam
+		behaves like a heavy ball with friction, which thus prefers flat minima in the
+		error surface.
+	\end{itemize}
+\end{itemize}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
