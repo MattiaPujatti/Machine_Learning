@@ -1698,15 +1698,47 @@ Using momentum is like pushing a ball down a hill. The ball accumulates momentum
 
 
 
+\chapter{Support Vector Machines}
+In this chapter we will discuss a very useful machine learning tool: the support vector machine paradigm ($SVM$) for learning linear predictors in high dimensional feature spaces. The high dimensionality of the feature space raises both sample complexity and computational complexity challenges.\\
+Let $S=(\vb{x}_1,y_1),\dots,(\vb{x}_m,y_m)$ be a training set of examples, where each $\vb{x}_i\in\mathds{R}^d$ and $y_i\in\left\{-1,1\right\}$. As we know from a previous chapter, we can say that this training set is linearly separable, if there exists an halfspace $(\vb{w},b)$ such that $y_i = sign(\sprod{w}{x_i}+b)\geq 0$ for all $i$ (or, equivalently $y_i(\sprod{w}{x_i}+b)>0$). All halfspaces $(\vb{w},b)$ that satisfy this condition are $ERM$ hypotheses (their 0-1 error is zero, which is the minimum possible error); so for any separable training sample, there are many $ERM$ halfspaces. Which one of them should the learner pick?
+Let's consider, for example, the training set described in the picture \ref{fig:ex_margin}.\\
+\begin{figure}[!h]
+	\centering
+	\includegraphics[scale=1]{images/ex_margin.pdf}
+	\caption{Multiple solution of an halfspace problem}
+	\label{fig:ex_margin}
+\end{figure}
+While both the dashed and solid hyperplanes separate the four examples, our intuition would probably lead us to prefer the dashed hyperplane over the solid one.\\
+One way to formalize this intuition is using the concept of \textbf{margin}.\\
+The margin of a hyperplane with respect to a training set is defined to be the minimal distance between a point in the training set and the hyperplane. If an hyperplane has a large margin, then it will still separate the training set even if we slightly perturb each instance. Recall also that, given a separating hyperplane, defined by $L=\left\{\vb{v}:\sprod{v}{w}+b=0\right\}$, and given a sample $\vb{x}$, the distance of $\vb{x}$ to $L$ is
+\[ d(\vb{x},L)=\min\left\{\norm{\vb{x}-\vb{v}}:\vb{v}\in L \right\} \]
+Moreover, the following theorem holds:
+\begin{theorem}
+	The distance between a point $\vb{x}$ and the hyperplane defined by $(\vb{w},b)$, 	where $\norm{\vb{w}}=1$ is $\abs{\sprod{w}{x}+ b}$.
+\end{theorem}
+On the basis of this theorem, the closest point in the training set to the separating hyperplane (i.e. the margin) is $\min_i\abs{\sprod{w}{x}+ b}$.
 
-
-
-
-
-
-
-
-
+\section{Hard-SVM}
+$Hard-SVM$ is the learning rule in which we return an $ERM$ hyperplane that separates the training set with the largest possible margin (obviously, it works only for linearly separable data). Given above the formula of the distance between a point $\vb{x}$ and an hyperplane with $\norm{\vb{w}}=1$, the Hard-SVM rule is
+\[ \underset{(\vb{w},b):\norm{\vb{w}}=1}{argmax} \min_{i\in[m]}\abs{\sprod{w}{x_i}+b} \quad\text{such that}\quad \forall\,i\; y_i\left(\sprod{w}{x_i}+b\right)>0 \]
+Whenever there is a solution to the preceding problem (i.e., we are in the separable case), we can write an equivalent problem as follows:
+\[ \underset{(\vb{w},b):\norm{\vb{w}}=1}{argmax} \min_{i\in[m]} y_i\left(\sprod{w}{x_i}+b\right)>0 \]
+Next, we give another equivalent formulation of the $Hard-SVM$ rule as a quadratic optimization problem (in which the objective is a convex quadratic function and the constraints are linear inequalities).
+\begin{tcolorbox}
+	\begin{center}
+		\textbf{Hard-SVM}
+	\end{center}
+	\textbf{Input}:\\
+	\-\ \qquad $S=(\vb{x}_1,y_1),\dots,(\vb{x}_m,y_m)$
+	
+	\textbf{Solve}:\\
+	\-\ \qquad $(\vb{w}_0,b_0) = \underset{(\vb{w},b)}{argmin\norm{\vb{w}}}^2\quad\text{such that}\quad\forall i,\; y_i\left(\sprod{w}{x_i}+b\right)\geq 1$
+	
+	\textbf{output}:\\
+	\-\ \qquad $\hat{\vb{w}}=\frac{\vb{w_0}}{\norm{\vb{w_0}}}$, $\hat{b} = \frac{b_0}{\norm{\vb{w_0}}}$
+	
+	\label{box:SGD_for_risk}
+\end{tcolorbox}
 
 
 
