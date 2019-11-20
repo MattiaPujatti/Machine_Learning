@@ -1422,7 +1422,10 @@ vector of parameters $\vb{w}=(w_1,\dots,w_d)^T\in\mathds{R}^d$ (for example the
 coefficients of a linear regression or the weights of a neural network), a 
 \textit{regularization function} is a map $R:\mathds{R}^d\to\mathds{R}$, 
 function of $\vb{w}$, for which the RLM rule outputs an hypothesis in 
-\[ \underset{\vb{w}}{argmin}\left(L_S(\vb{w})+R(\vb{w})\right) \]  
+\begin{equation}
+	\underset{\vb{w}}{argmin}\left(L_S(\vb{w})+R(\vb{w})\right) 
+	\label{eq:RLM}
+\end{equation}
 where $L_S(\vb{w})$ is the standard loss and $R(\vb{w})$ is a regularization 
 term that measures, in some way, the "complexity" of the found solution, it 
 balances between a low empirical risk and aiming at less complex hypotheses.\\
@@ -1479,6 +1482,7 @@ The main property of the Tikhonov regularization that we rely is on is that it m
 \begin{definition} (\textbf{Strongly Convex Functions})
 	A function $f$ is $\lambda$-strongly convex if for all $\vb{w}$,$\vb{u}$, and $\alpha\in(0,1)$ we have
 	\[ f(\alpha\vb{w}+(1-\alpha)\vb{u})\leq\alpha f(\vb{w})+(1-\alpha)f(\vb{u})-\frac{\lambda}{2}\alpha(1-\alpha)\norm{w-u}^2 \]	
+	\label{def:strongly_convex}
 \end{definition}
 Clearly, every convex function is 0-strongly convex. An example of this property can be found in figure \ref{fig:lambda_convex}.
 \begin{figure}[!h]
@@ -1570,11 +1574,13 @@ The explicit implementation of this algorithm is written in box \ref{box:SGD}, w
 	\begin{center}
 		\textbf{Stochastic Gradient Descent (SGD) for minimizing $f(\vb{w})$}
 	\end{center}
-	\textbf{Input:}\\
+	\textbf{Input}:\\
 	\-\ Scalar $\eta>0$\\
 	\-\ Integer $T>0$\\
 	
-	\textbf{for} $t=1,2,\dots,T$\\
+	\textbf{Initialize}: \quad $\vb{w}^{(1)}=\vb{0}$\\
+	
+	\textbf{for} $t=1,2,\dots,T$:\\
 	\-\ choose $\vb{v_t}$ from a random distribution such that $\mathds{E\left[\vb{v_t}|\vb{w}^{(t)} \right]\in\partial f(\vb{w}^{(t)})}$\\
 	\-\ update: $\vb{w}^{(t+1)} = \vb{w}^{(t)}-\eta\vb{v_t}$ \\
 	
@@ -1598,8 +1604,55 @@ empirical risk, $L_S(\vb{w})$, as an estimate to minimizing $L_\mcl{D}(\vb{w})$.
 Since we do not know the distribution $\mcl{D}$, we cannot simply calculate $\grad{L_\mcl{D}}(\vb{w}^{(t)})$ and minimize it with the $GD$ method. And then this technique is very expensive from a computational point of view, since it needs to process all the training data at each iteration, because the gradient has to be computed for every couple $(\vb{x}_i,y_i\in S)$. And this becomes a problem for large dataset, so it isn't the best method for real world ML problems.\\
 On the other hand $SGD$ is much faster, since at each step only one sample (taken randomly) is used for the computation and, in theory we could get the final solution at the first steps too! So, as many other stochastic methods, its efficiency comes up for complex problems and large datasets. Anyway also this algorithm has some "problems". As we can see in picture \ref{fig:ex_GD} the "trajectory" drown by the method is "noisier" than the other, and there is a possibility of jumping out from local minima. For this reason we often look for some approaches to stabilize the solution, for example taking the average of a set of final iterations (or all of these), to take into account fluctuations phenomena.\\
 
+\subsection{SGD for Risk Minimization}
+There are many ML tasks, in which the Stochastic Gradient Descent is used, for example:
+\begin{itemize}
+	\item Risk Minimization (ERM)
+	\item Regularized Loss Minimization (RLM)
+	\item Support Vector Machine (SVM)
+	\item Neural Networks (NN)
+\end{itemize}
+In this section we will discuss about the use of SGD for risk minimization.\\
+Let us first consider the case of differentiable functions, which contains also $L_\mcl{D}$. The construction of the random vector $\vb{v_t}$ will be as follows: first we sample $z\sim\mcl{D}$, then we define $\vb{v_t}$ to be de gradient of the function $\ell(\vb{w},z)$ with respect to $\vb{w}$, at the point $\vb{w}^{(t)}$. Then, by linearity of the gradient, we have 
+\[ \mathds{E}\left[\vb{v_t}|\vb{w}^{(t)} \right] = \underset{z\sim\mcl{D}}{\mathds{E}}\left[\grad{\ell}(\vb{w}^{(t)},z)\right]=\grad{\underset{z\sim\mcl{D}}{\mathds{E}}\left[\ell(\vb{w}^{(t)},z)\right]} = \grad{L_\mcl{D}}(\vb{w}^{(t)}) \]
+The gradient of the loss function $\ell(\vb{w},z)$ at $\vb{w}^{(t)}$ is therefore an unbiased estimate of the gradient of the risk function $L_\mcl{D}(\vb{w}^{(t)})$ and is easily constructed by sampling a single fresh example $z\sim\mcl{D}$ at each iteration $t$.\\
+To summarize, the stochastic gradient descent framework for minimizing the
+risk we write the box \ref{box:SGD_for_risk}.\\
 
+\begin{tcolorbox}
+	\begin{center}
+		\textbf{Stochastic Gradient Descent (SGD) for minimizing $L_\mcl{D}(\vb{w})$}
+	\end{center}
+	\textbf{Input}:\\
+	\-\ Scalar $\eta>0$\\
+	\-\ Integer $T>0$\\
+	
+	\textbf{Initialize}: \quad $\vb{w}^{(1)}=\vb{0}$\\
+	
+	\textbf{for} $t=1,2,\dots,T$:\\
+	\-\ sample $z\sim\mcl{D}$\\
+	\-\ pick $\vb{v_t}=\grad{\ell}(\vb{w}^{(t)},z)$\\
+	\-\ update: $\vb{w}^{(t+1)} = \vb{w}^{(t)}-\eta\vb{v_t}$ \\
+	
+	\textbf{output:} \qquad$\vb{\bar{w}} = \frac{1}{T}\sum_{t=1}^T \vb{w}^{(t)}$ \qquad  or \qquad $\vb{\bar{w}}=\vb{w}^{(T)}$\\
+	
+	\label{box:SGD_for_risk}
+\end{tcolorbox}
 
+We shall now use our analysis of SGD to obtain a sample complexity analysis for
+learning convex-Lipschitz-bounded problems. In fact, we can prove that:
+\begin{theorem}
+	Consider a convex-Lipschitz-bounded learning problem with parameters $\rho, B$. Then, for every $\varepsilon>0$, if we run the SGD method for minimizing $L_\mcl{D}(\vb{w}) $ with a number of iterations (i.e., number of examples)
+	\[ T\geq\frac{B^2\rho^2}{\varepsilon^2} \]
+	and with $\eta = \sqrt{\frac{B^2}{\rho^2T}}$, the output of SGD satisfies:
+	\[ \mathds{E}\left[L_\mcl{D}(\vb{\bar{w}})\right]\leq\min_{\vb{w}\in\mcl{H}}L_\mcl{D}(\vb{w})+\varepsilon \]
+\end{theorem}
+
+\subsection{SGD for $\lambda$-strongly convex functions and RLM}
+There is also a variant of $SGD$ that enjoys a faster convergence rate for problems in which the objective function is strongly convex, where the definition of this strongly convexity has been written in \ref{def:strongly_convex}. In particular, we can show (but we won't) that it is a good strategy to use an adaptive step size of value $\eta_t=\frac{1}{\lambda t}$.\\
+But there is a particular case of strongly convex function that can be very useful for us, that is the Regularized Loss Minimization (RLM): we can, in fact, rewrite the associated optimization problem \ref{eq:RLM} (dividing, for convenience, $\lambda$ by 2) as 
+\[ \min_{\vb{w}}\left(\frac{\lambda}{2}\norm{\vb{w}}^2+L_S(\vb{w})\right) \]
+Then, defining $f(\vb{w})=\frac{\lambda}{2}\norm{\vb{w}}^2+L_S(\vb{w})$, we notice that $f$ is a $2\frac{\lambda}{2}=\lambda$-strongly function, and for this reason the problem can be solved in a efficient way with learning rate $\eta_t=\frac{1}{\lambda t}$  
 
 
 
