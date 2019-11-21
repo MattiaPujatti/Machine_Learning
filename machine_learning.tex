@@ -669,7 +669,7 @@ on the $i$-th example, the couple $(\vb{x_i},y_i)$.
 	then\\
 	\-\ \quad	$\vb{w}^{(t+1)}=\vb{w}^{(t)}+y_i\vb{x_i}$\\
 		else:\\
-	\-\ \quad	\textbf{output:} $\vb{w}$ 	
+	\-\ \quad	\textbf{Output:} $\vb{w}$ 	
 \end{tcolorbox}
 
 The following theorem guarantees that in the realizable case, the algorithm 
@@ -1303,7 +1303,7 @@ this parameter on the entire training set.\\
 	removing the i-th fold $*\backslash$\\
 	\-\ $error(\theta) = \frac{1}{k}\sum_{i=1}^k L_{S_i}(h_{i,\theta})$\\
 	
-	\textbf{output:}\\
+	\textbf{Output:}\\
 	\-\ $\theta^* = argmin_\theta\left[error(\theta)\right]$\\
 	\-\ $h_{\theta^*} = A(S;\theta^*)$
 \label{box:k_fold}
@@ -1585,7 +1585,7 @@ The explicit implementation of this algorithm is written in box \ref{box:SGD}, w
 	\-\ choose $\vb{v_t}$ from a random distribution such that $\mathds{E\left[\vb{v_t}|\vb{w}^{(t)} \right]\in\partial f(\vb{w}^{(t)})}$\\
 	\-\ update: $\vb{w}^{(t+1)} = \vb{w}^{(t)}-\eta\vb{v_t}$ \\
 	
-	\textbf{output:} \qquad$\vb{\bar{w}} = \frac{1}{T}\sum_{t=1}^T \vb{w}^{(t)}$ \qquad  or \qquad $\vb{\bar{w}}=\vb{w}^{(T)}$\qquad   or  \qquad $\vb{\bar{w}} = \frac{1}{T-T_0}\sum_{t=T_0}^T\vb{w}^{(t)}$
+	\textbf{Output:} \qquad$\vb{\bar{w}} = \frac{1}{T}\sum_{t=1}^T \vb{w}^{(t)}$ \qquad  or \qquad $\vb{\bar{w}}=\vb{w}^{(T)}$\qquad   or  \qquad $\vb{\bar{w}} = \frac{1}{T-T_0}\sum_{t=T_0}^T\vb{w}^{(t)}$
 	
 	\label{box:SGD}
 \end{tcolorbox}
@@ -1635,7 +1635,7 @@ risk we write the box \ref{box:SGD_for_risk}.\\
 	\-\ pick $\vb{v_t}=\grad{\ell}(\vb{w}^{(t)},z)$\\
 	\-\ update: $\vb{w}^{(t+1)} = \vb{w}^{(t)}-\eta\vb{v_t}$ \\
 	
-	\textbf{output:} \qquad$\vb{\bar{w}} = \frac{1}{T}\sum_{t=1}^T \vb{w}^{(t)}$ \qquad  or \qquad $\vb{\bar{w}}=\vb{w}^{(T)}$\\
+	\textbf{Output:} \qquad$\vb{\bar{w}} = \frac{1}{T}\sum_{t=1}^T \vb{w}^{(t)}$ \qquad  or \qquad $\vb{\bar{w}}=\vb{w}^{(T)}$\\
 	
 	\label{box:SGD_for_risk}
 \end{tcolorbox}
@@ -1737,7 +1737,7 @@ Next, we give another equivalent formulation of the $Hard-SVM$ rule as a quadrat
 	\textbf{Solve}:\\
 	\-\ \qquad $(\vb{w}_0,b_0) = \underset{(\vb{w},b)}{argmin\norm{\vb{w}}}^2\quad\text{such that}\quad\forall i,\; y_i\left(\sprod{w}{x_i}+b\right)\geq 1$
 	
-	\textbf{output}:\\
+	\textbf{Output}:\\
 	\-\ \qquad $\hat{\vb{w}}=\frac{\vb{w_0}}{\norm{\vb{w_0}}}$, $\hat{b} = \frac{b_0}{\norm{\vb{w_0}}}$
 	
 	\label{box:Hard_SVM}
@@ -1777,19 +1777,81 @@ Historically, many of the properties of $SVM$ have been obtained by considering 
 Note that the dual problem only involves inner products between instances and does not require direct access to specific elements within an instance. This property is important when implementing $SVM$ with kernels, as we will discuss later.
 
 \section{Soft SVM}
+The Hard-SVM formulation assumes that the training set is linearly separable, which is a rather strong assumption. \textbf{Soft-SVM} can be viewed as a relaxation of the Hard-SVM rule that can be applied even if the training set is not linearly separable, and also that take into account the violation of the condition of separability into the objective function.\\
+The optimization rule described for Hard-SVM impose to \textbf{every} sample of the training set to satisfy the relation $y_i\left(\sprod{w}{x_i}+b\right)\geq 1$ which is a quite hard constrain. A natural relaxation is to allow the constraint to be violated for some of the examples in the training set. This can be modeled by introducing non negative slack variables, $\xi_1,\dots,\xi_m$, and replacing the request above with 
+\begin{equation}
+y_i\left(\sprod{w}{x_i}+b\right)\geq 1-\xi_i
+\label{eq:Soft_SVM}
+\end{equation}
+so using these variable $\xi_i$ to quantify how much the constrain is violated.\\
+Soft-SVM jointly minimizes the norm of $\vb{w}$ (corresponding to the margin) and the average of $\xi_i$ (corresponding to the constraint violation from misclassified points). The trade off between the two terms is controlled by a parameter $\lambda$. This leads to the Soft-SVM optimization problem, in the box \ref{box:Soft_SVM}.\\
+\begin{tcolorbox}
+	\begin{center}
+		\textbf{Soft-SVM}
+	\end{center}
+	\textbf{Input}:\\
+	\-\ \qquad $S=(\vb{x}_1,y_1),\dots,(\vb{x}_m,y_m)$
+	
+	\textbf{Parameter}:\\
+	\-\ \qquad $\lambda>0$
+	
+	\textbf{Solve}:\\
+	\-\ \qquad $\min_{\vb{w},b,\xi}\left(\lambda\norm{\vb{w}}^2+\frac{1}{m}\sum_{i=1}^m\xi_i\right) \quad\text{such that}\;\forall i \quad y_i\left(\sprod{w}{x_i}+b\right)\geq 1-\xi_i\quad \text{and }\;\xi_i\geq 0$
+	
+	\textbf{Output}:\\
+	\-\ \qquad $\vb{w},b$
+	
+	\label{box:Soft_SVM}
+\end{tcolorbox}
+We can rewrite condition \ref{eq:Soft_SVM} as a regularized loss minimization problem, defining a new loss function called \textbf{Hinge Loss}:
+\[ \ell^{hinge}\left((\vb{w},b),(\vb{x},y)\right) = \max\left\{0,1-y\left(\sprod{w}{x}+b\right)\right\} \]
+An equivalent form of \ref{eq:Soft_SVM}, in function of the averaged hinge loss on a training set $S$ is
+\[ \min_{\vb{w},b}\left(\lambda\norm{\vb{w}}^2+\underbrace{\frac{1}{m}\sum_{i=1}^m \ell^{hinge}\left((\vb{w},b),(\vb{x}_i,y_i)\right)}_{L_S^{hinge}(\vb{w},b)}\right) \]
+It is often more convenient to consider Soft-SVM for learning a homogenous halfspace, where the bias term $b$ is set to be zero, which yields the following optimization problem:
+\[ \min_{\vb{w}}\left(\lambda\norm{\vb{w}}^2+L_S^{hinge}(\vb{w})\right) \]
+where
+\[ L_S^{hinge}(\vb{w}) = \frac{1}{m}\sum_{i=1}^m\max\left\{0,1-y\sprod{w}{x_i}\right\} \]
+To solve problems like this we can, as usually, use one of the standard solvers for optimization problems, or use the stochastic gradient descent, as we do in the following subsection.
 
-
-
-
-
-
-
-
-
-
-
-
-
+\subsection{SGD for Soft-SVM}
+In this subsection we describe a very simple algorithm for solving the optimization problem of Soft-SVM (relying on the SGD framework), namely:
+\begin{equation}
+\min_{\vb{w},b}\left(\frac{\lambda}{2}\norm{\vb{w}}^2+\frac{1}{m}\sum_{i=1}^m \max\left\{0,1-y\left(\sprod{w}{x_i}+b\right)\right\} \right)
+\label{eq:Soft_SVM_opt_prob}
+\end{equation} 
+where the factor $\frac{1}{2}$ in the regularization term is added to simplify some computations.\\
+Now, we apply the SGD rules for RLM problem (\ref{box:SGD_for_risk}) to the loss function 
+\[ f^{hinge}(\vb{w}) = \max\left\{0,1-y\left(\sprod{w}{x}+b\right)\right\} \]
+for which the (sub)gradient at $\vb{w}$ is
+\[ \vb{v^{hinge}}=\left\{\begin{aligned}
+&0\qquad\qquad if\;1-y\sprod{w}{x}\leq 0\\&-y\vb{x}\qquad if\;1-y\sprod{w}{x}\leq 0
+\end{aligned}\right. \]
+So, the update rule becomes:
+\[ \vb{w}^{(t+1)}=\vb{w}^{(t)}-\eta\vb{v}^{(t)} \qquad\text{or}\qquad \vb{w}^{(t+1)}=-\frac{1}{\lambda t}\sum_{j=1}^t\vb{v}^{(t)} \]
+where the first relation comes from the "standard" version of SGD, while the second one from the variant of SGD for $\lambda$-strongly convex functions.\\
+To summarize the algorithm needed to implement SGD to solve Soft-SVM optimizatio problem, we first define 
+\[ \vb{\theta}^{(t)}=-\sum_{j=1}^{t-1}\vb{v_j} \]
+and we obtain the procedure written in box \ref{box:SGD_for_Soft_SVM}.
+\begin{tcolorbox}
+	\begin{center}
+		\textbf{SGD for solving Soft-SVM}
+	\end{center}
+	\textbf{Goal}: \quad Solve equation \ref{eq:Soft_SVM_opt_prob}\\ 
+	\textbf{Initialize}: \quad $\vb{\theta}^{(1)}=\vb{0}$\\
+	\textbf{Parameter}: \qquad $T$\\
+	\textbf{Algorithm}:\\
+	\-\ \qquad for  $t=1,\dots,T$\\
+	\-\ \qquad\quad $\vb{w}^{(t)} = \frac{1}{\lambda t}\vb{\theta}^{(t)}$\\
+	\-\ \qquad\quad choose $i$ randomly from $\left\{1,\dots,m\right\}$\\
+	\-\ \qquad\quad if $y_i\sprod{w^{(t)}}{x_i}<1$ then $\vb{\theta}^{(t+1)}=\vb{\theta^{(t)}}+y_i\vb{x_i}$\\
+	\-\ \qquad\quad else: $\vb{\theta}^{(t+1)}=\vb{\theta^{(t)}}$\\
+	
+	\textbf{Output}:\\
+	\-\ \qquad $\vb{\bar{w}}=\frac{1}{T}\sum_{t=1}^T\vb{w}^{(t)}$ or $\vb{\bar{w}}=\vb{w}^{(T)}$
+	
+	\label{box:SGD_for_Soft_SVM}
+\end{tcolorbox}
+As we can notice, the Hinge loss allow us to correct the update rule by a quantity $-y_i\vb{x_i}$ only when the sample is misclassified, leaving it unchanged when the sample is correctly classified. 
 
 
 
