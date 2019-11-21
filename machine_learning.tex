@@ -1722,7 +1722,10 @@ On the basis of this theorem, the closest point in the training set to the separ
 $Hard-SVM$ is the learning rule in which we return an $ERM$ hyperplane that separates the training set with the largest possible margin (obviously, it works only for linearly separable data). Given above the formula of the distance between a point $\vb{x}$ and an hyperplane with $\norm{\vb{w}}=1$, the Hard-SVM rule is
 \[ \underset{(\vb{w},b):\norm{\vb{w}}=1}{argmax} \min_{i\in[m]}\abs{\sprod{w}{x_i}+b} \quad\text{such that}\quad \forall\,i\; y_i\left(\sprod{w}{x_i}+b\right)>0 \]
 Whenever there is a solution to the preceding problem (i.e., we are in the separable case), we can write an equivalent problem as follows:
-\[ \underset{(\vb{w},b):\norm{\vb{w}}=1}{argmax} \min_{i\in[m]} y_i\left(\sprod{w}{x_i}+b\right)>0 \]
+\begin{equation}
+\underset{(\vb{w},b):\norm{\vb{w}}=1}{argmax} \min_{i\in[m]} y_i\left(\sprod{w}{x_i}+b\right)>0
+\label{eq:SVM}
+\end{equation}
 Next, we give another equivalent formulation of the $Hard-SVM$ rule as a quadratic optimization problem (in which the objective is a convex quadratic function and the constraints are linear inequalities).
 \begin{tcolorbox}
 	\begin{center}
@@ -1737,8 +1740,54 @@ Next, we give another equivalent formulation of the $Hard-SVM$ rule as a quadrat
 	\textbf{output}:\\
 	\-\ \qquad $\hat{\vb{w}}=\frac{\vb{w_0}}{\norm{\vb{w_0}}}$, $\hat{b} = \frac{b_0}{\norm{\vb{w_0}}}$
 	
-	\label{box:SGD_for_risk}
+	\label{box:Hard_SVM}
 \end{tcolorbox}
+The lemma that follows shows that the output of Hard-SVM is indeed the separating hyperplane with the largest margin. Intuitively, Hard-SVM looks for $\vb{w}$ of minimal norm among all the vectors that separate the data and for which $\abs{\sprod{w}{x_i}+b}\geq 1$ for all $i$. In other words, we enforce the margin to be 1, but now the units in which we measure the margin scale with the norm of $\vb{w}$. Therefore, finding the largest margin halfspace boils down to finding $\vb{w}$ whose norm is minimal. Formally:
+\begin{lemma}
+	The output of Hard-SVM (\ref{box:Hard_SVM}) is a solution for \ref{eq:SVM}\\
+\end{lemma}
+\begin{proof}
+	Let $(\vb{w}^*,b^*)$ be a solution of equation \ref{eq:SVM} and define the margine achieved by them as $\gamma^*=\min_{i\in[m]}y_i\left(\sprod{w^*}{x_i}+b^*\right)$. Therefore, for all $i$ we have
+	\[ y_i\left(\sprod{w^*}{x_i}+b^*\right)\geq\gamma^* \qquad\text{or, equivalently}\qquad y_i\left(\sprod{\frac{w^*}{\gamma^*}}{x_i}+\frac{b^*}{\gamma^*}\right)\geq 1 \]
+	Hence, the pair $(\frac{\vb{w}^*}{\gamma^*},\frac{b^*}{\gamma^*})$ satisfies the conditions of the quadratic optimization problem (\ref{box:Hard_SVM}). Therefore $\norm{\vb{w_0}}\leq\frac{\vb{w}^*}{\gamma^*}=\frac{1}{\gamma^*}$. It follows that for all $i$:
+	\[ y_i\left(\sprod{\hat{w}}{x_i}+\hat{b}\right)=\frac{1}{\norm{\vb{w_0}}}y_i\left(\sprod{w_0}{x_i}+b_0\right)\geq\frac{1}{\norm{\vb{w_0}}}\geq\gamma^* \]
+	Since $\norm{\vb{\hat{w}}}=1$ we obtain that $(\hat{\vb{w}},\hat{b})$ is an optimal solution for \ref{eq:SVM}.
+\end{proof}
+
+\subsection{The Homogeneous Case}
+It is often more convenient to consider homogenous halfspaces, namely, halfspaces that pass through the origin and are thus defined by $sign(\sprod{w}{x})$, where the bias term $b$ is set to be zero. Hard-SVM for homogenous halfspaces amounts to solving
+\begin{equation}
+\vb{w_0}=\underset{\vb{w}}{argmin}\norm{\vb{w}}^2 \qquad\text{such that for all i}\qquad y_i\sprod{w}{x_i}\geq 1
+\label{eq:SVM_hom}
+\end{equation}
+As we discussed in a previous chapter, we can reduce the problem of learning nonhomogenous halfspaces to the problem of learning homogenous halfspaces by adding one more feature to each instance of $x_i$, thus increasing the dimension to $d+1$. Notice that, however, the optimization problem given in box \ref{box:Hard_SVM} does not regularize the bias term $b$, while if we learn a homogenous halfspace in $\mathds{R}^{d+1}$ using that implementation then we regularize the bias term (i.e., the $d+1$ component of the weight vector) as well. However, regularizing $b$ usually does not make a significant difference to the sample complexity.
+
+\section{Support Vectors}
+The name "Support Vector Machine" stands for the fact that the solution of the Hard-SVM, $\vb{w}_0$, is supported (i.e. is the linear span of) the examples that are exactly at the distance of $1/\norm{\vb{w}_0}$ from the separating hyperplane. So these \textit{support vectors} are the one at a minimum distance from $\vb{w}_0$ and in particular they are the only training vector that matter for defining the solution of the algorithm.\\
+\begin{theorem}
+	Let $\vb{w}_0$ be defined as before as $\vb{w}_0=\min_{\vb{w}}\norm{\vb{w}}^2$ such that for all $i$ $y_i\sprod{w}{x_i}\geq 1$ and let $I=\left\{i:\abs{\sprod{w_0}{x_i}}\right\}=1$ (i.e. the set that contains the indices of support vectors). Then, there exist coefficients $\alpha_1,\dots,\alpha_m$ such that
+	\[ \vb{w}_0=\sum_{i\in I}\alpha_i\vb{x_i} \]
+	The examples $\left\{\vb{x_i}:i\in I\right\}$ are the Support Vectors.
+\end{theorem}
+Notice that solving Hard-SVM is equivalent to find the coefficients $\alpha_i$ for the support vectors, since for all the others $\alpha_i=0$.
+
+\section{Duality}
+Historically, many of the properties of $SVM$ have been obtained by considering the \textit{dual} of equation \ref{eq:SVM_hom}. Our presentation of $SVM$ does not rely on duality so, for completeness, we present the same formula re-written as a maximization problem:
+\[ \max_{\vb{\alpha}\in\mathds{R}^m:\vb{\alpha}\geq 0}\sum_{i=1}^m\alpha_i-\frac{1}{2}\sum_{i=1}^m\sum_{j=1}^m\alpha_i\alpha_jy_iy_j\sprod{x_i}{x_j} \]
+Note that the dual problem only involves inner products between instances and does not require direct access to specific elements within an instance. This property is important when implementing $SVM$ with kernels, as we will discuss later.
+
+\section{Soft SVM}
+
+
+
+
+
+
+
+
+
+
+
 
 
 
