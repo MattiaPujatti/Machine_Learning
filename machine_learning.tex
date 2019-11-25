@@ -9,6 +9,8 @@
 \usepackage{physics}
 \usepackage{bm} % for a textbf in math mode
 \usepackage{tcolorbox} %for boxes of text/math
+\usepackage[hidelinks]{hyperref}
+
 
 
 \theoremstyle{plain}
@@ -98,7 +100,7 @@ This learning paradigm, which main goal is to find a predictor $h$ that minimize
 
 \vspace{0.5cm}
 Although the ERM rule seems very natural, without being careful this approach may fail miserabily.\\
-Let's consider, for example, the sample in figure \ref{fig:overfit} (on the left), assuming a probability distribution $\mcl{D}$ for which instances $x$ are taken uniformily at random in the square, and the labelling function $f$ that assign the value 1 to the instances in the upper squares, and 0 to the others (essentially 0 to blue ones and 1 to red ones). If we collect the training set shown in figure \ref{fig:overfit} (on the right), to train the ML algorithm, a good predictor seems to be the function $h_S(x) = \left\{\begin{aligned} &0 \text{ if x in left side}\\ &1 \text{ if x in right side}\end{aligned}\right.$, that effectively minimize the training loss ($L_S(h_S) =0$, practically perfect). But is this a good predictor?
+Let's consider, for example, the sample in figure \hyperref{fig:overfit} (on the left), assuming a probability distribution $\mcl{D}$ for which instances $x$ are taken uniformily at random in the square, and the labelling function $f$ that assign the value 1 to the instances in the upper squares, and 0 to the others (essentially 0 to blue ones and 1 to red ones). If we collect the training set shown in figure \hyperref{fig:overfit} (on the right), to train the ML algorithm, a good predictor seems to be the function $h_S(x) = \left\{\begin{aligned} &0 \text{ if x in left side}\\ &1 \text{ if x in right side}\end{aligned}\right.$, that effectively minimize the training loss ($L_S(h_S) =0$, practically perfect). But is this a good predictor?
 
 \begin{figure}[hbtp]
 \centering
@@ -227,7 +229,7 @@ L_\mcl{D}(h) = \mathds{P}_{(x,y)\sim\mcl{D}}[h(x)\neq y] = \mcl{D}([(x,y):h(x)\n
 \label{eq:true_err_D}
 \end{equation}
 
-Note: in the previous definition \ref{eq:err_pred_rule} the request was $[h(x)\neq f(x)]$ but, as we said before, the function $f(x)$ doesn't exist anymore because it was a too strong assumption asking that the labels were fully determined by a single function.\\
+Note: in the previous definition \hyperref{eq:err_pred_rule} the request was $[h(x)\neq f(x)]$ but, as we said before, the function $f(x)$ doesn't exist anymore because it was a too strong assumption asking that the labels were fully determined by a single function.\\
 The definition of the empirical risk, instead, remains the same as before
 \[ L_S(h)=\frac{[i\in[m]:h(x_i)\neq y_i]}{m} \]
 and still represent the probability that, for a pair $(x_i,y_i)$ taken uniformily at random training data, the event "$h(x_i)\neq y_i$" holds.
