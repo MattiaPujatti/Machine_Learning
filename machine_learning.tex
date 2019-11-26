@@ -1864,7 +1864,8 @@ In the previous chapter we described the $SVM$ paradigm for learning halfspaces 
 	As we saw, $SVM$ is a real powerful algorithm, but still limited to linear models, that cannot always be used (directly!). Recall, for example, the calculation of the VC-dimension of threshold functions in $\mathds{R}$. As we can see from figure \ref{fig:ex_halfspace_kernel}, our data is not linearly separable with a traditional linear predictor, so how we can solve our problem?\\
 	An idea can be the application of a non linear transformation to each point in the training set, followed by the learning process with a predictor in the transformed space.
 	\begin{figure}[!h]
-		%\includegraphics[scale=1]{images/ex_halfspace_kernel.pdf}
+		\centering
+		\includegraphics[scale=0.5]{images/ex_halfspace_kernel.pdf}
 		\caption{Solution to the halfspace problem in 1d}
 		\label{fig:ex_halfspace_kernel}
 	\end{figure}
@@ -1905,16 +1906,33 @@ where $f:\mathds{R}^m\to\mathds{R}$ is an arbitrary function and $R:\mathds{R}_+
 	Assume that $\psi$ is a mapping from $\mcl{X}$ to an Hilbert space. Then, there exists a vector $\vb{\alpha}\in\mathds{R}^m$ such that $\vb{w}=\sum_{i=1}^m\alpha_i\psi(\vb{x_i})$ is an optimal solution for the equation \ref{eq:SVM_prob}.
 \end{theorem}
 \begin{proof}
-	DA FARE
+	Let $\vb{w}^*$ be an optimal solution of equation \ref{eq:SVM_prob}. Since $\vb{w}^*$ is an element of an Hilbert space, we can rewrite $\vb{w}^*$ as
+	\[ \vb{w}^*=\sum_{i=1}^m\alpha_i\psi(\vb{x}_i)+\vb{u} \]
+	where $\sprod{u}{\psi(x_i)}=0$ for all $i$. Set $\vb{w}=\vb{w}^*-\vb{u}$. Clearly, $\norm{\vb{w}^*}^2=\norm{\vb{w}}^2+\norm{\vb{u}}^2$, thus $\norm{\vb{w}}\leq\norm{\vb{w}^*}$. Since $R$ is non decreasing, we obtain that $R(\norm{\vb{w}})\leq R(\norm{\vb{w}^*})$. Additionally, for all $i$ we have that 
+	\[ y_i\sprod{w}{\psi(x_i)}=y_i\sprod{w^*-u}{\psi(x_i)}=y_i\sprod{w^*}{\psi(x_i)} \]
+	hence
+	\[ f\left(y_1\sprod{w}{\psi(x_1)},\dots,y_m\sprod{w}{\psi(x_m)}\right) = f\left(y_1\sprod{w^*}{\psi(x_1)},\dots,y_m\sprod{w^*}{\psi(x_m)}\right) \]
+	We have shown that the objective of equation \ref{eq:SVM_prob} at $\vb{w}$ cannot be larger than the objective at $\vb{w^*}$ and therefore $\vb{w}$ is also an optimal solution. Since $\vb{w}=\sum_{i=1}^m\alpha_i\psi(\vb{x_i})$ we conclude our proof.
 \end{proof}
 The main consequence of this theorem is that we can optimize the problem for the coefficients $\alpha_i$, getting another problem that this time depends only on $K(\vb{x},\vb{x'})=\sprod{\psi(x)}{\psi(x')}$, without any explicitly computation of $\psi(\vb{x})$ or $\psi(\vb{x}')$.\\
-\begin{proof}
+\begin{proof})
 	On the basis of the representer theorem we can optimize Equation \ref{eq:SVM_prob} with respect to the coefficients $\vb{\alpha}$ instead of the coefficients $\vb{w}$ as follows.\\
 	Writing $\vb{w}=\sum_{j=1}^m\alpha_j\psi(\vb{x}_j)$, we have that, for all $i$:
 	\[ \sprod{w}{\psi(x_i)}=\sprod{\sum_j\alpha_j\psi(\vb{x_j})}{\psi(x_i)} = \sum_{j=1}^m\alpha_j\sprod{\psi(\vb{x}_j)}{\psi(\vb{x}_i)} = \sum_j\alpha_j K(\vb{x}_j,\vb{x}_i) \]	
 	And similarly:
 	\[ \norm{\vb{w}}^2=\sprod{\sum_j\alpha_j\psi(\vb{x}_j)}{\sum_i\alpha_i\psi(\vb{x}_i)} =\sum_{ij}\alpha_i\alpha_j\sprod{\psi(\vb{x}_j)}{\psi(\vb{x}_i)} = \sum_{ij}\alpha_i\alpha_jK(\vb{x}_i,\vb{x}_j) \]	
+	Let $K(\vb{x},\vb{x}')=\sprod{\psi(\vb{x})}{\psi(\vb{x}')}$ be a function that implements the kernel function with respect to the embedding $\psi$. Instead of solving \ref{eq:SVM_prob}, we can solve the equivalent problem
+	\[ \min_{\vb{\alpha}\in\mathds{R}^m} f\left(\sum_{j=1}^m\alpha_jK(\vb{x}_j,\vb{x}_1),\dots,\sum_{j=1}^mK(\vb{x}_j,\vb{x}_m)\right) +R\left(\sqrt{\sum_{i,j=1}^m\alpha_i\alpha_jK(\vb{x}_j,\vb{x}_i)}\right) \]
+	To solve this new optimization problem we do not need any direct access to elements in the feature space. The only thing we should know is how to calculate inner products in the feature space, or equivalently, to calculate the kernel function. In fact, we need to know the value of the $m\times m$ matrix $G$, that is $G_{i,j}=K(\vb{x}_i,\vb{x}_j)$, which is often called the \textit{Gram matrix}.\\
+	In particular, specifying the preceding to the Soft-SVM given in equation \ref{eq:Soft_SVM_opt_prob}, we can rewrite the problem as
+	\[ \min_{\vb{\alpha}\in\mathds{R}^m}\left(\lambda\vb{\alpha}^TG\vb{\alpha}+\frac{1}{m}\sum_{i=1}^m\max\left\{0,1-y_i(G\vb{\alpha})_i\right\}\right) \]
+ 	Once we learn the coefficients $\vb{\alpha}$ we can calculate the prediction on a new
+ 	instance by
+ 	\[ \sprod{w}{\psi(x)} = \sum_{j=1}^m\alpha_j\sprod{\psi(x_j)}{\psi(x)}=\sum_{j=1}^m\alpha_jK(\vb{x}_j,\vb{x}) \]
+ 	The advantage of working with kernels rather than directly optimizing $\vb{w}$ in the feature space is that in some situations the dimension of the feature space is extremely large while implementing the kernel function is very simple.
 \end{proof}
+
+\subsection{Polynomial Kernels}
 
 
 
