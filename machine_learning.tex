@@ -1856,6 +1856,86 @@ and we obtain the procedure written in box \ref{box:SGD_for_Soft_SVM}.
 As we can notice, the Hinge loss allow us to correct the update rule by a quantity $-y_i\vb{x_i}$ only when the sample is misclassified, leaving it unchanged when the sample is correctly classified. 
 
 
+\chapter{Kernel Methods}
+In the previous chapter we described the $SVM$ paradigm for learning halfspaces in high dimensional feature spaces. This enables us to enrich the expressive power of halfspaces by first mapping the data into a high dimensional feature space, and then learning a linear predictor in that space. While this approach greatly extends the expressiveness of halfspace predictors, it raises both sample complexity and computational complexity challenges. In the previous chapter we tackled the sample complexity issue using the concept of margin. In this chapter we tackle the computational complexity challenge using the method of \textit{kernels}.\\
+
+\section{Embeddings into feature spaces}
+\begin{example}
+	As we saw, $SVM$ is a real powerful algorithm, but still limited to linear models, that cannot always be used (directly!). Recall, for example, the calculation of the VC-dimension of threshold functions in $\mathds{R}$. As we can see from figure \ref{fig:ex_halfspace_kernel}, our data is not linearly separable with a traditional linear predictor, so how we can solve our problem?\\
+	An idea can be the application of a non linear transformation to each point in the training set, followed by the learning process with a predictor in the transformed space.
+	\begin{figure}[!h]
+		%\includegraphics[scale=1]{images/ex_halfspace_kernel.pdf}
+		\caption{Solution to the halfspace problem in 1d}
+		\label{fig:ex_halfspace_kernel}
+	\end{figure}
+\end{example}              
+The generalized rule of the ideas used in the previous example (defining a \textit{non linear} map from the input space to a new one, typically larger) can be written as follows:
+\begin{itemize}
+	\item Given a domain set $\mcl{X}$ and a learning task, choose a mapping $\psi:\mcl{X}\to\mcl{F}$, for some \textbf{feature space} $\mcl{F}$, that is nothing but the range of $\psi$ and usually coincide with $\mathds{R}^n$ for some $n$, or also with an arbitrary Hilbert space (even of infinite size).
+	\item Given a sequence of labeled samples $S=(\vb{x_1},y_1),\dots,(\vb{x_m},y_m)$, map them to $\hat{S}=(\psi(\vb{x_1}),y_1),\dots,(\psi(\vb{x_m}),y_m)$.
+	\item Train a linear predictor $h$ over $\hat{S}$.
+	\item Predict the label of a test point $\vb{x}$, to be $h(\psi(\vb{x}))$.
+\end{itemize}
+The success of this learning paradigm depends on choosing a good $\psi$ for a given learning task: that is, a $\psi$ that will make the image of the data distribution (close to being) linearly separable in the feature space, thus making the resulting algorithm a good learner for a given task. Picking such an embedding requires prior knowledge about that task.
+
+\section{The Kernel Trick}
+We have just seen that embedding the input space into some higher dimensional feature space make halfspaces more expressive. However, the computational complexity can become really huge, due to the fact that we are computing linear separators over very high dimensional data. The common solution to this problem is \textit{kernel based learning}. The term “kernels” is used in this context to describe inner products in the feature space. Given an embedding $\psi$ of some domain space $\mcl{X}$ into some Hilbert space, we define the kernel function 
+\[ K(\vb{x},\vb{x}')=\sprod{\psi(x)}{\psi(x')} \]
+One can think of $K$ as specifying similarity between instances and of the embedding $\psi$ as mapping the domain set $\mcl{X}$ into a space where these similarities are realized as inner products. It turns out that many learning algorithms for halfspaces can be carried out just on the basis of the values of the kernel function over pairs of domain points. The main advantage of such algorithms is that they implement linear separators in high dimensional feature spaces without having to specify points in that space or expressing the embedding $\psi$ explicitly.\\
+\begin{example}
+	To provide an example of the advantages of using this kernel method, let's consider a second degree polynomial
+	\[ \psi(\vb{x})=\left(1,x_1,x_2,\dots,x_d,x_1x_1,x_2x_2,\dots,x_dx_d\right)^T \qquad \text{with }\; \vb{x}\in\mathds{R}^d \]
+	The dimension of $\psi(\vb{x})=1+d+d^2$.
+	\[ \sprod{\psi(\vb{x})}{\psi(\vb{x}')} = 1+\sum_{i=1}^dx_ix_i'+\sum_{i=1}^d\sum_{j=1}^dx_ix_jx_i'x_j' \qquad\qquad\Theta(d^2) \]
+	Also note that
+	\[ \sum_{i=1}^d\sum_{j=1}^dx_ix_jx_i'x_j'= \left(\sum_{i=1}^dx_ix_i'\right)\left(\sum_{j=1}^dx_jx_j'\right)=\left(\sprod{x}{x'}\right)^2 \]
+	Therefore
+	\[  K_\psi(\vb{x},\vb{x}') = \sprod{\psi(\vb{x})}{\psi(\vb{x}')} = 1+\sprod{x}{x'}+\left(\sprod{x}{x'}\right)^2\qquad\qquad\Theta(d) \]
+	As we can see, computing $\psi(\vb{x})$ requires a time of the order of $\Theta(d^2)$, while computing $K_\psi(\vb{x},\vb{x}')$ with the last formula just a $\Theta(d)$. So, the kernel trick guarantee us a computational advantage preventing us to waste resources on the calculation of $\psi(\vb{x})$.
+\end{example}
+
+\subsection{Application to SVM}
+In the previous chapter we saw that regularizing the norm of $\norm{\vb{w}}$ yields a small
+sample complexity even if the dimensionality of the feature space is high. Interestingly, as we will show later, regularizing the norm of $\vb{w}$ is also helpful in overcoming the computational problem. To do so, first note that all versions of the $SVM$ optimization problem we have derived are instances of the following general problem:
+\begin{equation} \min_{\vb{w}}\left(f\left(\sprod{w}{\psi(x_1)},\dots,\sprod{w}{\psi(x_m)}\right)+R(\norm{\vb{w}})\right)
+\label{eq:SVM_prob}
+\end{equation}
+where $f:\mathds{R}^m\to\mathds{R}$ is an arbitrary function and $R:\mathds{R}_+\to\mathds{R}$ is a monotonically non decreasing function. The following theorem shows that there exists an optimal solution for these kind of problems, that lies in the span of $\left\{\psi(\vb{x_1},\dots,\psi(\vb{x_m}))\right\}$.
+\begin{theorem} (\textbf{Representer Theorem})\\
+	Assume that $\psi$ is a mapping from $\mcl{X}$ to an Hilbert space. Then, there exists a vector $\vb{\alpha}\in\mathds{R}^m$ such that $\vb{w}=\sum_{i=1}^m\alpha_i\psi(\vb{x_i})$ is an optimal solution for the equation \ref{eq:SVM_prob}.
+\end{theorem}
+\begin{proof}
+	DA FARE
+\end{proof}
+The main consequence of this theorem is that we can optimize the problem for the coefficients $\alpha_i$, getting another problem that this time depends only on $K(\vb{x},\vb{x'})=\sprod{\psi(x)}{\psi(x')}$, without any explicitly computation of $\psi(\vb{x})$ or $\psi(\vb{x}')$.\\
+\begin{proof}
+	On the basis of the representer theorem we can optimize Equation \ref{eq:SVM_prob} with respect to the coefficients $\vb{\alpha}$ instead of the coefficients $\vb{w}$ as follows.\\
+	Writing $\vb{w}=\sum_{j=1}^m\alpha_j\psi(\vb{x}_j)$, we have that, for all $i$:
+	\[ \sprod{w}{\psi(x_i)}=\sprod{\sum_j\alpha_j\psi(\vb{x_j})}{\psi(x_i)} = \sum_{j=1}^m\alpha_j\sprod{\psi(\vb{x}_j)}{\psi(\vb{x}_i)} = \sum_j\alpha_j K(\vb{x}_j,\vb{x}_i) \]	
+	And similarly:
+	\[ \norm{\vb{w}}^2=\sprod{\sum_j\alpha_j\psi(\vb{x}_j)}{\sum_i\alpha_i\psi(\vb{x}_i)} =\sum_{ij}\alpha_i\alpha_j\sprod{\psi(\vb{x}_j)}{\psi(\vb{x}_i)} = \sum_{ij}\alpha_i\alpha_jK(\vb{x}_i,\vb{x}_j) \]	
+\end{proof}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 \end{flushleft}
 \end{document}
