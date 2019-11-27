@@ -1925,7 +1925,9 @@ The main consequence of this theorem is that we can optimize the problem for the
 	\[ \min_{\vb{\alpha}\in\mathds{R}^m} f\left(\sum_{j=1}^m\alpha_jK(\vb{x}_j,\vb{x}_1),\dots,\sum_{j=1}^mK(\vb{x}_j,\vb{x}_m)\right) +R\left(\sqrt{\sum_{i,j=1}^m\alpha_i\alpha_jK(\vb{x}_j,\vb{x}_i)}\right) \]
 	To solve this new optimization problem we do not need any direct access to elements in the feature space. The only thing we should know is how to calculate inner products in the feature space, or equivalently, to calculate the kernel function. In fact, we need to know the value of the $m\times m$ matrix $G$, that is $G_{i,j}=K(\vb{x}_i,\vb{x}_j)$, which is often called the \textit{Gram matrix}.\\
 	In particular, specifying the preceding to the Soft-SVM given in equation \ref{eq:Soft_SVM_opt_prob}, we can rewrite the problem as
-	\[ \min_{\vb{\alpha}\in\mathds{R}^m}\left(\lambda\vb{\alpha}^TG\vb{\alpha}+\frac{1}{m}\sum_{i=1}^m\max\left\{0,1-y_i(G\vb{\alpha})_i\right\}\right) \]
+	\begin{equation} \min_{\vb{\alpha}\in\mathds{R}^m}\left(\lambda\vb{\alpha}^TG\vb{\alpha}+\frac{1}{m}\sum_{i=1}^m\max\left\{0,1-y_i(G\vb{\alpha})_i\right\}\right)
+	\label{eq:kernel_softSVM}
+	\end{equation}
  	Once we learn the coefficients $\vb{\alpha}$ we can calculate the prediction on a new
  	instance by
  	\[ \sprod{w}{\psi(x)} = \sum_{j=1}^m\alpha_j\sprod{\psi(x_j)}{\psi(x)}=\sum_{j=1}^m\alpha_jK(\vb{x}_j,\vb{x}) \]
@@ -1933,14 +1935,82 @@ The main consequence of this theorem is that we can optimize the problem for the
 \end{proof}
 
 \subsection{Polynomial Kernels}
+The $k$ degree polynomial kernel is defined to be
+\[ K(\vb{x},\vb{x}')=\left(1+\sprod{x}{x'}\right)^k \]
+We could show (but we will not), that this is indeed a kernel function, of the type $K(\psi(\vb{x},\vb{x}'))$; and since the mapping $\psi:\mathds{R}^n\to\mathds{R}^{(n+1)^k}$ contains all the monomials up to degree $k$, an halfspace over the range of $\psi$ corresponds to a normal predictor of degree $k$ over the original halfspace. Hence, learning a halfspace with a $k$ degree polynomial kernel enables us to learn polynomial predictors of degree $k$ over the original space. Note that here the complexity of implementing it is $\order{n}$ while the dimension of the feature space is on the order of $\order{n^k}$.
+
+\subsection{Gaussian Kernel}
+Given a scalar $\sigma>0$, the Gaussian Kernel, that is still a function of the type $K(\vb{x},\vb{x}')$, is defined to be
+\[ K(\vb{x},\vb{x}')=e^{-\frac{\norm{x-x'}^2}{2\sigma}} \]
+Here the feature space is of infinite dimension, but evaluating the kernel is still very simple. Intuitively, the Gaussian kernel sets the inner product in the feature space between $\vb{x}$ and $\vb{x}'$ to be close to zero if the instances are far away from each other (in
+the original domain) and close to 1 if they are close, and $\sigma$ is a parameter that controls the scale determining what we mean by “close”. As we can see in figure \ref{fig:kernel_gauss_sigma}, this standard deviation corresponds to the trade-off between precisely fit the training set (with risk of overfitting) or finding a less accurate but more general solution.
+\begin{figure}[!h]
+	\centering
+	\includegraphics[scale=0.6]{images/kernel_gauss_sigma.pdf}
+	\caption{Graphical representation of the Gaussian Kernel method with different values of the trade-off parameter (gamma parameter of sklearn correspond to the inverse of $\sigma$).}
+	\label{fig:kernel_gauss_sigma}
+\end{figure}
+
+Potentially, we can learn any polynomial predictor over the original space by using a Gaussian Kernel. Finally, recalling that the VC-dimension of the class of all polynomial predictors is infinite, we could think of some contradictions, but there isn't any, because the sample complexity required to learn with a Gaussian kernel depends on the margin in the feature space, which will be large if we are lucky, but can in general be arbitrarily small.\\
+The Gaussian kernel is also called the $RBF$ kernel, for \textbf{Radial Basis Functions}.\\
+In figure \ref{fig:kernel_linear_vs_RBF} we can also see the advantages of using the RBF/Gaussian kernel respect to the linear one.
+\begin{figure}[!h]
+	\centering
+	\includegraphics[scale=0.6]{images/kernel_linear_RBF.pdf}
+	\caption{Linear vs RBF Kernel}
+	\label{fig:kernel_linear_vs_RBF}
+\end{figure}
+
+\subsubsection{Practical SVM with Kernels}
+With figure \ref{fig:kernel_gauss_sigma} and \ref{fig:kernel_linear_vs_RBF} we have already seen two example of practical application of the kernel method. We want also to focus on the trade-off between solutions with a large margin and some errors respect to solutions with a lower margin but less errors. The parameter that control such trade-off is $\lambda$, as we can easily see from the optimization problem
+\[ \min_{\vb{w}}\left(\norm{\vb{w}}^2+L_S^{hinge}(\vb{w})\right) \]
+The importance of this parameter, that has to be chosen properly, can be observed in figure \ref{fig:kernel_lambda}.
+\begin{figure}[!h]
+	\centering
+	\includegraphics[scale=0.6]{images/kernel_lambda.pdf}
+	\caption{Trade-off parameter in SVM with Kernels (the parameter $c$ in sklearn, libsvm and other ML tools has the same role but weights the loss term, i.e., works in the opposite direction)}
+	\label{fig:kernel_lambda}
+\end{figure}
+
+So, we need to improve our choice of parameters $\lambda$ and $\sigma$ to obtain the best possible results.
+\begin{figure}[!h]
+	\centering
+	\includegraphics[scale=0.5]{images/kernel_grid_search.pdf}
+	\caption{Grid Search}
+	\label{fig:kernel_grid_search}
+\end{figure}
 
 
+\subsection{Implementing Soft-SVM with Kernels}
+While we could have designed an algorithm for solving equation \ref{eq:kernel_softSVM}, there is an even simpler approach that directly tackles the Soft-SVM optimization problem inn the feature space
+\begin{equation} \min_{\vb{w}}\left(\frac{\lambda}{2}\norm{\vb{w}}^2+\frac{1}{m}\sum_{i=1}^m\max\left\{0,1-y\sprod{w}{\psi(x_i)} \right\}\right)
+\label{eq:kernel_Soft_SVM_opt_prob}
+\end{equation}
+while only using kernel evaluations. So our main goal is to rewrite the algorithm described in box \ref{box:SGD_for_Soft_SVM} to solve the previous equation. Formally, let $K(\vb{x},\vb{x}')=\sprod{\psi(x)}{\psi(x')}$ be the kernel function, and let's redefine the two vectors $\bm{\theta}(t)$ and $\vb{w}(t)$ that we used in the SGD procedure as $\bm{\beta}(t)$ and $\bm{\alpha}(t)$ such that:
+\[ \bm{\theta}(t)=\sum_{j=1}^m\beta_j^{(t)}\psi(\vb{x}_j) \qquad \vb{w}(t)=\sum_{j=1}^m\alpha_j^{(t)}\psi(\vb{x}_j) \] 
+The vectors $\bm{\beta}$ and $\bm{\alpha}$ are updated according to the following procedure (\ref{box:kernels_for_Soft_SVM}).
+\begin{tcolorbox}
+	\begin{center}
+		\textbf{SGD for solving Soft-SVM with Kernels}
+	\end{center}
+	\textbf{Goal}: \quad Solve equation \ref{eq:kernel_Soft_SVM_opt_prob}\\ 
+	\textbf{Initialize}: \quad $\bm{\beta}^{(1)}=\vb{0}$\\
+	\textbf{Parameter}: \qquad $T$\\
+	\textbf{Algorithm}:\\
+	\-\ \qquad for  $t=1,\dots,T$\\
+	\-\ \qquad\quad $\bm{\alpha}^{(t)} = \frac{1}{\lambda t}\bm{\beta}^{(t)}$\\
+	\-\ \qquad\quad choose $i$ randomly from $\left\{1,\dots,m\right\}$\\
+	\-\ \qquad\quad for all $j\neq i$ set $\beta_j^{(t+1)}=\beta_j^{(t)}$\\
+	\-\ \qquad\quad if $y_i\sum_{j=1}^m\alpha_j^{(t)}K(\vb{x}_j,\vb{x}_i)<1$ then $\bm{\beta}^{(t+1)}=\beta_i^{(t)}+y_i$\\
+	\-\ \qquad\quad else: $\beta_i^{(t+1)}=\beta_i^{(t)}$\\
+	
+	\textbf{Output}:\\
+	\-\ \qquad $\vb{\bar{w}}=\sum_{j=1}^m\bar{\alpha}_j\psi(\vb{x}_j) \quad\text{where}\quad \bm{\bar{\alpha}}=\frac{1}{T}\sum_{t=1}^T\bm{\alpha}^{(t)}$
+	
+	\label{box:kernels_for_Soft_SVM}
+\end{tcolorbox}
 
-
-
-
-
-
+% AGGIUNGERE ESERCIZIO?
 
 
 
