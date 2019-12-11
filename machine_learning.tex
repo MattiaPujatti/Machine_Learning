@@ -2013,10 +2013,41 @@ The vectors $\bm{\beta}$ and $\bm{\alpha}$ are updated according to the followin
 % AGGIUNGERE ESERCIZIO?
 
 
+\chapter{Neural Networks}
+An artificial neural network is a model of computation inspired by the structure of neural networks (NN) in the brain. In simplified models of the brain, it consists of a large number of basic computing devices (neurons) that are connected to each other in a complex communication network, through which the brain is able to carry out highly complex computations. Artificial neural networks are formal computation constructs that are modeled after this computation paradigm. A neural network can be described as a directed graph whose nodes correspond to neurons and edges correspond to links between them. Each neuron receives as input a weighted sum of the outputs of the neurons connected to its incoming edges. The first proposal of a neural network was in 1940-50 but only in the 80-90s these ideas were applied to the practical, but with results lower than SVM and other techniques: we had to wait until 2010 to have performing algorithms.
 
-
-
-
+\section{FeedForward Neural Network}
+The idea behind neural networks is that many neurons can be joined together by communication links to carry out complex computations. It is common to describe the structure of a neural network as a graph whose nodes are the neurons and each (directed) edge in the graph links the output of some neuron to the input of another neuron. We will restrict our attention to feedforward network structures in which the underlying graph does not contain cycles. The network is typically organized into \textit{layers}: each neuron takes in input only the output of neurons of the previous layer. A feedforward neural network is described by a directed acyclic graph, $G =(V, E)$, and a weight function over the edges, $w:E\to\mathds{R}$ (where $V$ are the neurons, $\abs{V}$ the size of the network and $E$ indicates the connections between neurons, by directed edges).\\
+\begin{figure}[!h]
+	\centering
+	%\includegraphics[scale=1]{images/feedforward_NN.pdf}
+	\caption{Graph of a Feedforward network}
+	\label{fig:feedforward_NN}
+\end{figure}
+So, each neuron:
+\begin{itemize}
+	\item Takes in input the sum of the outputs of the connected neurons from previous layer weighted by the	edge weights.
+	\item Each single neuron is modeled as a simple scalar \textbf{activation function} $\sigma : \mathds{R}\to\mathds{R}$.
+\end{itemize}
+To simplify the description of the calculation performed by the network, we have assumed that the network is organized in layers. That is, the set of nodes can be decomposed into a union of (nonempty) disjoint subsets, $V=\bigcup_{t=0}^T V_t$ such that each edge in $E$ connects some node in $V_{t-1}$ to some node in $V_t$ , for some $t\in[T]$.\\
+Notation:
+\begin{itemize}
+	\item $V_t$, $t=0,\dots,T$: t-th layer.
+	\item $d^t+1$: number of nodes of layer $t$.
+	\begin{itemize}
+		\item $"+1"$: constant neuron (avoid bias, as in homogeneous coordinates).
+	\end{itemize}
+	\item $V_0$: input layer.
+	\item $V_T$: output layer.
+	\item $T$: depth of the network ($T=2$ in "classic" NN, $T>>2$ in deep networks).
+	\item $v_{t,i}$: i-th neuron in the t-th layer.
+	\item $\vb{v}^{(t)}=\left(1,v_{t,1},\dots,v_{t,d^t}\right)^T$: all neurons of layer $t$.
+	\item $w_{rj}^{(t+1)}=w\left(v_{t,r},v_{t+1,j}\right)$: weight of arc from neuron $r$ of layer $t$ to neuron $j$ of layer $t+1$.
+	\item $\vb{w}_j^{(t)}=\left(w_{0j}^{(t)},\dots,w_{d^tj}^{(t)}\right)^T$: all weights of arcs in input to neuron $j$ of layer $t$.
+	\item $w^{(t)}$: matrix of weights of all arcs incoming to layer $t$.
+	\[ w^{(t)}=\left[\begin{array}{c c c c} w_{01}^{(t)} &w_{02}^{(t)} &\dots &w_{0d^{(t)}}^{(t)}\\ w_{11}^{(t)} &w_{12}^{(t)} &\dots &w_{1d^{(t)}}^{(t)}\\
+	\vdots &\vdots &\dots &\vdots\\ w_{d^{(t-1)}1}^{(t)} &w_{d^{(t-1)}2}^{(t)} &\dots &w_{d^{(t-1)}d^{(t)}}^{(t)} \end{array}\right] \] 
+\end{itemize}
 
 
 
