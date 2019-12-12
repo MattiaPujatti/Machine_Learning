@@ -10,6 +10,8 @@
 \usepackage{bm} % for a textbf in math mode
 \usepackage{tcolorbox} %for boxes of text/math
 \usepackage[hidelinks]{hyperref}
+\usepackage{booktabs}
+
 
 
 
@@ -2020,7 +2022,7 @@ An artificial neural network is a model of computation inspired by the structure
 The idea behind neural networks is that many neurons can be joined together by communication links to carry out complex computations. It is common to describe the structure of a neural network as a graph whose nodes are the neurons and each (directed) edge in the graph links the output of some neuron to the input of another neuron. We will restrict our attention to feedforward network structures in which the underlying graph does not contain cycles. The network is typically organized into \textit{layers}: each neuron takes in input only the output of neurons of the previous layer. A feedforward neural network is described by a directed acyclic graph, $G =(V, E)$, and a weight function over the edges, $w:E\to\mathds{R}$ (where $V$ are the neurons, $\abs{V}$ the size of the network and $E$ indicates the connections between neurons, by directed edges).\\
 \begin{figure}[!h]
 	\centering
-	%\includegraphics[scale=1]{images/feedforward_NN.pdf}
+	\includegraphics[scale=0.7]{images/feedforward_NN.pdf}
 	\caption{Graph of a Feedforward network}
 	\label{fig:feedforward_NN}
 \end{figure}
@@ -2039,6 +2041,7 @@ Notation:
 	\end{itemize}
 	\item $V_0$: input layer.
 	\item $V_T$: output layer.
+	\item Layers $V_1,\dots,V_{T-1}$ are often called hidden layers.
 	\item $T$: depth of the network ($T=2$ in "classic" NN, $T>>2$ in deep networks).
 	\item $v_{t,i}$: i-th neuron in the t-th layer.
 	\item $\vb{v}^{(t)}=\left(1,v_{t,1},\dots,v_{t,d^t}\right)^T$: all neurons of layer $t$.
@@ -2048,6 +2051,259 @@ Notation:
 	\[ w^{(t)}=\left[\begin{array}{c c c c} w_{01}^{(t)} &w_{02}^{(t)} &\dots &w_{0d^{(t)}}^{(t)}\\ w_{11}^{(t)} &w_{12}^{(t)} &\dots &w_{1d^{(t)}}^{(t)}\\
 	\vdots &\vdots &\dots &\vdots\\ w_{d^{(t-1)}1}^{(t)} &w_{d^{(t-1)}2}^{(t)} &\dots &w_{d^{(t-1)}d^{(t)}}^{(t)} \end{array}\right] \] 
 \end{itemize}
+We denote  $o_{t,i}$ the output of $v_{t,i}$ when the network is fed with the input vector $\vb{x}$. Therefore, for $i\in[d^t]$ we have $o_{0,i}(\vb{x}) = x_i$, and for $i = n + 1$ we have o $o_{0,i}(\vb{x}) = 1$ (because the last layer, $V_0$ always output '1').\\
+So, how does a network work? Let's assume we have calculated the outputs of the neurons at layer $t$, we want to calculate them at layer $t+1$. We proceed as follow: the output of a neuron is a non-linear (activation) function applied to the linear combination of the inputs coming from the previous layer. When the network is fed with input $\vb{x}$:
+\[ a_{t+1,j}=\sprod{w_j^{(t+1)}}{v^{(t)}} = \text{output of neuron before the activation function} \]
+\[ o_{t+1,j}(\vb{x})=\sigma\left(\sum_{r:\left(v_{t,r},v_{t+1,j}\in E\right)} w\left(v_{t,r},v_{t+1,r}\right)o_{t,r}(\vb{x})\right)=\sigma\left(a_{t+1,j}(\vb{x})\right) \]
+\[ \text{In vector notation: } \qquad o_{t+1,j}=\sigma\left(\sprod{w_j^{(t+1)}}{v^{(t)}}\right)=\sigma\left(a_{t+1,j}\right) \]
+\subsubsection{Forward Propagation}
+So, practically, if we want to take an input sample and compute the output of the network we have to pass trough the outputs of each layer, using the previous one as a new input ($v^{(0)}\to v^{(1)}\to v^{(2)} \to\dots\to v^{(T)}$). We can summarize this with the series of instructions in box \ref{box:NN_forward_propagation}.
+
+\begin{tcolorbox}
+	\begin{center}
+		\textbf{Forward Propagation of Neural Networks}
+	\end{center}
+	\textbf{Input}: \quad $x=\left(x_1,\dots,x_d\right)^T$; NN with 1 output node\\ 
+
+	\textbf{Algorithm}:\\
+	\-\ $v^{(0)}\leftarrow\left(1,x_1,\dots,x_d\right)^T$;\\
+	\-\ for $t\leftarrow 1$ to $T$ do:\\
+	\-\ \qquad\quad $a^{(t)}\leftarrow\left(w^{(t)}\right)^Tv^{(t-1)}$;\\
+	\-\ \qquad\quad $v^{(t)}\leftarrow\left(1,\sigma(a^{(t)})^T\right)^T$;\\
+	\-\ \qquad\quad $y\leftarrow v^{(T)}$;\\
+	\-\ return $y$;\\
+	
+	\textbf{Output}: prediction $y$ of NN\\
+	
+	\label{box:NN_forward_propagation}
+\end{tcolorbox}
+
+\subsection{Activation Functions}
+A feedforward neural network is described by a directed acyclic graph, $G=(V,E)$, and a weight function over the edges, $w:E\to\mathds{R}$. Each single neuron is modeled as a simple scalar function, $\sigma:\mathds{R}\to\mathds{R}$. We will focus on some possibilities fr $\sigma$, like the sign function, the threshold function or the sigmoid. We
+call $\sigma$ the “activation” function of the neuron. 
+\subsubsection{Sign and Threshold Functions}
+\begin{figure}[!h]
+	\begin{minipage}{0.5\textwidth}
+		\[ \begin{aligned}&\sigma(a)=sign(a)\\&\mathds{R}^n\to[-1,1]\end{aligned} \]
+	\end{minipage}
+	\begin{minipage}{0.5\textwidth}
+		image
+	\end{minipage}
+\end{figure}
+\begin{figure}[!h]
+	\begin{minipage}{0.5\textwidth}
+		\[ f(x)=\left\{\begin{aligned}&0 \quad\text{if } 0>x\\&1 \quad\text{if } x\geq 0\\ \end{aligned}\right. \]
+	\end{minipage}
+	\begin{minipage}{0.5\textwidth}
+	image
+	\end{minipage}
+\end{figure}
+\begin{table}[!h]
+	\centering
+	\begin{tabular}{c|c}
+		\textbf{Advantages}& \textbf{Disadvantages}\\
+		\parbox{0.4\textwidth}{\begin{itemize}\item Simple and fast\\ \item Nice interpretation as the firing rate of a neuron \begin{itemize}\item[o] $-1$ = not firing\\ \item[o] $1$ = firing\end{itemize}\end{itemize}} & \parbox{0.4\textwidth}{\begin{itemize}\item Output is not smooth/continuous\\ \item Saturate and kill gradients, thus NN will barely learn\end{itemize}}\\ 
+	\end{tabular}
+\end{table}
+\subsubsection{Sigmoid Function}
+\begin{figure}[!h]
+	\begin{minipage}{0.5\textwidth}
+		\[ \begin{aligned}&\sigma(a)=\frac{1}{1+e^{-a}}\\& \sigma'(a)=\sigma(a)[1-\sigma(a)]\\ &\mathds{R}^n\to[0,1]\end{aligned} \]
+	\end{minipage}
+	\begin{minipage}{0.5\textwidth}
+		image
+	\end{minipage}
+\end{figure}
+\begin{table}[!h]
+	\centering
+	\begin{tabular}{c|c}
+		\textbf{Advantages}& \textbf{Disadvantages}\\
+		\parbox{0.4\textwidth}{\begin{itemize}\item Smooth Output\\ \item Nice interpretation as the firing rate of a neuron \begin{itemize}\item[o] $0$ = not firing at all\\ \item[o] $1$ = fully firing\end{itemize}\end{itemize}} & \parbox{0.4\textwidth}{\begin{itemize}\item Sigmoid neurons saturate and kill gradients, thus NN will barely learn: when the neuron's activation are 0 or 1 (saturate) \begin{itemize}\item[o] gradient at these regions is almost zero\\ \item[o] almost no signal will flow to its weights\\ \item[o] if if initial weights are too large then most neurons would saturate \end{itemize}\end{itemize}}\\ 
+	\end{tabular}
+\end{table}
+\subsubsection{Tanh Function}
+\begin{figure}[!h]
+	\begin{minipage}{0.5\textwidth}
+		\[ \begin{aligned}&\sigma(a)=tanh(a)\\& \sigma'(a)=1-[tanh(a)^2]\\ &\mathds{R}^n\to[0,1]\\ &\\ &\text{Tanh is a scaled and shifted sigmoid:}\\ &tanh(x)=2sigm(2x)-1 \end{aligned} \]
+	\end{minipage}
+	\begin{minipage}{0.5\textwidth}
+		image
+	\end{minipage}
+\end{figure}
+\begin{table}[!h]
+	\centering
+	\begin{tabular}{c|c}
+		\textbf{Advantages}& \textbf{Disadvantages}\\
+		Unlike Sigmoid, output is zero-centered & Like Sigmoid, tahn neurons saturate.\\ 
+	\end{tabular}
+\end{table}
+\subsubsection{ReLU Function}
+\begin{figure}[!h]
+	\begin{minipage}{0.5\textwidth}
+		\[ \begin{aligned}&\sigma(a)=max(0,a)\\& \sigma'(a)=\left\{\begin{aligned}& 1\;\text{if } a>0\\ &0\;\text{if } a\leq 0\end{aligned}\right.\\ &\mathds{R}^n\to\mathds{R}^n_+\end{aligned} \]
+	\end{minipage}
+	\begin{minipage}{0.5\textwidth}
+		image
+	\end{minipage}
+\end{figure}
+\textbf{Advantages}\\
+\begin{itemize}
+	\item Trains much faster: 
+	\begin{itemize}
+		\item[o] accelerates the convergence of SGD
+		\item[o] due to linear, non-saturating form
+	\end{itemize}
+	\item Less expensive operations:
+	\begin{itemize}
+		\item[o] compared to sigmoid/tanh (exponentials etc.)
+		\item[o] implemented by simply thresholding a matrix at zero
+	\end{itemize}
+	\item More expressive
+	\item Prevents the gradient vanishing problem
+	\item Most deep networks use ReLU nowadays
+\end{itemize}
+
+\subsection{Learning Neural Networks}
+Once we have specified a neural network by $(V,E,\sigma,w)$, we obtain a function $h_{V,E,\sigma,w}:\mathds{R}^{\abs{V_0-1}}\to\mathds{R}^{\abs{V_T}}$. Any set of such functions can serve as an hypothesis class for learning. Usually, we define a hypothesis class of neural network predictors by fixing the graph $(V,E)$ as well as the activation function $\sigma$, and letting the hypothesis class be all functions of the form $h_{V,E,\sigma,w}$ for some $w:E\to\mathds{R}$. The triplet $(V,E,\sigma)$ is often called the \textbf{architecture} of the network. We denote the hypothesis class by
+\[ \mcl{H}_{V,E,\sigma}=\left\{h_{V,E,\sigma,w}: w \text{ is mapping from } E \text{ to } \mathds{R}\right\} \]
+Where $w$ contains the parameters that are going to be learned, so the scope of the training of a NN is finding the optimal set of weights.
+
+\section{The Expressive Power of Neural Networks}
+In this section we study the expressive power of neural networks, namely, what type of functions can be implemented using a neural network. More concretely, we will fix some architecture, $V,E,\sigma$, and will study what functions hypotheses in $mcl{H}_{V,E,\sigma}$
+can implement, as a function of the size of $V$.\\
+We start the discussion with studying which type of Boolean functions (i.e., functions from $\left\{\pm 1\right\}^d$ to $\left\{\pm 1\right\}$) can be implemented by $\mcl{H}_{V,E,sign}$. Then observe that for every computer in which real numbers are stored using $b$ bits, whenever we calculate a function $f:\mathds{R}^n\to\mathds{R}$ on such a computer we in fact calculate a function $g:\left\{\pm 1\right\}^nb\to\left\{\pm 1\right\}^b$. Therefore, studying which Boolean functions can be implemented by $\mcl{H}_{V,E,sign}$ can tell us which functions can be implemented on a computer that stores real numbers using $b$ bits.
+\begin{proposition}
+	For every $d$, there exists a graph $(V,E)$  of depth 2 such that $\mcl{H}_{V,E,sign}$ contains all functions from $\left\{-1,1\right\}^d$ to $\left\{-1,1\right\}$.
+\end{proposition}
+\begin{proof}
+	We construct a graph with $\abs{V_0}=n+1$, $\abs{V_1}=2^n+1$. Let $E$ be all possible edges between adjacent layers. Now let $f:\left\{\pm 1\right\}^n\to\left\{\pm 1\right\}$ be some boolean function. We need to show that we can adjust the weights so that the network will implement $f$. Let $\vb{u_1},\dots,u{u_k}$ be all vectors in $\left\{\pm 1\right\}^n$ on which $f$ outputs 1. Observe that for every $i$ and every $\vb{x}\in\left\{\pm 1\right\}^n$, if $\vb{x}\neq\vb{u}_i$ then $\sprod{x}{u_i}\leq n-2$ and if $\vb{x}=\vb{u}_i$ then $\sprod{x}{u_i}=n$. It follows that the function $g_i(\vb{x})=sign\left(\sprod{x}{u_i}-n+1\right)$ is equal to 1 if and only if $\vb{x}=\vb{u}_i$. This means that we can adapt the weights between $V_0$ and $V_1$ so that for every $i\in[k]$, the neuron $v_{1,i}$ implements the function $g_i(\vb{x})$. Next, we observe that $f(\vb{x})$ is the disjunction of the functions $g_i(\vb{x})$, and therefore can be written as 
+	\[ f(\vb{x})=sign\left(\sum_{i=1}^k g_i(\vb{x})+k-1\right) \]
+	which concludes our proof.
+\end{proof}
+This proposition means that, without restricting the size of the network, every Boolean function can be implemented using a neural network of depth 2. However, this is a weak property, as the size of the resulting network might be exponentially large, because of the number of the necessary hidden layers (previous proof).
+\begin{proposition}
+	For every $d$, let $s(d)$ be the minimal integer such that there exists a graph $(V,E)$ with $\abs{V}=s(d)$ such that $\mcl{H}_{V,E,sign}$ contains all the functions from $\left\{-1,1\right\}^d$ to $\left\{-1,1\right\}$. Then $s(d)$ is ab exponential function of $d$.
+\end{proposition}
+We obtain analogs results using the sigmoid as the activation function.\\
+Next, we can formulate the same proposition also for real functions:
+\begin{proposition}
+	For every fixed $\varepsilon>0$ and every Lipschitz function $f[-1,1]^d\to[-1,1]$ is is possible to construct a neural network such that for every input $\vb{x}\in[-1,1]^d$ the output of the NN is in $[f(\vb{x}-\varepsilon),f(\vb{x})+\varepsilon]$.
+\end{proposition}
+So NN are universal approximators! However, as in the case of Boolean functions, the size of the network here again cannot be polynomial in $d$.
+\begin{proposition}
+	Fix some $\varepsilon\in(0,1)$. For every $d$, let $s(d)$ be the minimal integer such that there exists a graph $(V,E)$ with $\abs{V}=s(d)$ such that $\mcl{H}_{V,E,\sigma}$, with $\sigma=$ sigmoid, can approximate, with precision $\varepsilon$, every 1-Lipschitz function $f[-1,1]^d\to[-1,1]$. Then s(d) is exponential in $d$.
+\end{proposition}
+
+\begin{example}
+	We next provide several geometric illustrations of functions $f:\mathds{R}^2\to\left\{\pm 1\right\}$ and show how to express them using a neural network with the sign activation function.\\
+	Let us start with a depth 2 network, namely, a network with a single hidden layer. Each neuron in the hidden layer implements an halfspace predictor. Then, the single neuron at the output layer applies an halfspace on top of the binary outputs of the neurons in the hidden layer. So the network contains all hypothesis which are an intersection of $k-1$ halfspaces, where $k$ is the number of neurons in the hidden layer; namely, they can express all convex polytopes with $k-1$ faces, as can be seen in picture \ref{fig:NN_ex_geom} on the left, as an intersection of 5 halfspaces. Adding, instead, one more layer, we can implement a function that indicates whether $\vb{x}$ is in some convex polytope, since the neurons in the output layer implement the disjunction of its inputs, computing an union of polytopes (figure \ref{fig:NN_ex_geom}, on the right).
+	\begin{figure}[!h]
+		\centering
+		\includegraphics[scale=0.6]{images/NN_ex_geom.pdf}
+		\caption{Geometric example of the implementation of 2-layer (left) and 3-layer (right) Neural Network in which each neuron corresponds to an halfspace}
+		\label{fig:NN_ex_geom}
+	\end{figure}
+\end{example}
+
+\section{Sample Complexity and Runtime of a Neural Network}
+Now, we will discuss about the sample complexity of learning the class $\mcl{H}_{V,E,\sigma}$. Recall that the fundamental theorem of learning tells us that the sample complexity of learning an hypothesis class of binary classifiers depends on its VC-dimension. Therefore, we focus on calculating the VC-dimension of hypothesis classes of the form $\mcl{H}_{V,E,\sigma}$, where the output layer of the graph contains a single neuron.\\
+\begin{proposition}
+	The VC-dimension of $\mcl{H}_{V,E,sign}$ is $\order{\abs{E}\log(\abs{E})}$.
+\end{proposition}
+\begin{proposition}
+	The VC-dimension of $\mcl{H}_{V,E,sign}$ is $\order{\abs{V}^2\abs{E}^2}$.
+\end{proposition}
+So, large Neural Networks require a lot of data!\\
+But, assuming we have enough data, can we find the best hypothesis? The problem is that applying the ERM rule to NN is computationally difficult, even for relatively small NN.
+\begin{theorem}
+	Let $k\geq 3$. For every $d$ let $(V,E)$ be a layered graph with $d$ input nodes at the (only) hidden layer, where one of them is the constant neuron, and a single output node. Then, it is \textbf{NP-hard} to implement the ERM rule with respect to $\mcl{H}_{V,E,sign}$.
+\end{theorem}
+Also approximation of ERM rule (for example predictors with low empirical error) are computationally infeasible. One could think of changing the architecture of the network to circumvent the hardness result, for example applying the ERM rule on other, larger networks, or also changing the activation function (with the sigmoid for example). But all this approaches are gonna fail.
+
+\section{SGD and BackPropagation}
+In the previous section we have shown that applying the ERM rule on a NN is computationally very hard. So the successive idea is:
+\begin{itemize}
+	\item Forward propagate the training data and compute the loss
+	\item Consider the loss as a function of the weights and compute the gradient of the loss w.r.t the weights
+	\item Update the weights with $SGD$
+\end{itemize}
+Since $E$ is a finite set, we can think of the weight function as a vector $\vb{w}\in\mathds{R}^{\abs{E}}$. Suppose the network has $d$ input neurons and $k$ output neurons, and denote by $h_{\vb{w}}:\mathds{R}^d\to\mathds{R}^k$ the function calculated by the network is the weight function is defined by $\vb{w}$. Recall that the $SGD$ algorithm acts for minimizing the risk function
+\[ L_{\mcl{D}}(\vb{w})=\underset{(\vb{x},\vb{y})\sim\mcl{D}}{\mathds{E}}\left[\ell(h_{\vb{w}}(\vb{x}),\vb{y})\right] \]
+so we can use the same code written in \ref{box:SGD_for_risk} with a few modifications, which are relevant to the neural network application because of the non-convexity of the objective function.\\
+First, while in the general implementation we initialized $\vb{w}$ to the zero vector, in this case it has to be set to a randomly chosen vector with all values close to zero. This is because an initialization with the zero vector will lead all hidden neurons to have the same weights (if the network is a full layered network). In addition, the hope is that if we repeat the SGD procedure several times, where each time we initialize the process with
+a new random vector, one of the runs will lead to a good local minimum. Second, while a fixed step size, $\eta$, is guaranteed to be good enough for convex problems, here we utilize a variable step size $\eta_t$ because of the non-convexity of the loss function. Third, we output the best performing vector on a validation set; in addition, it is sometimes helpful to add a regularization on the weights, with parameter $\lambda$ (so we try to minimize $L_{\mcl{D}(\vb{w})}+\frac{\lambda}{2}\norm{\vb{w}}^2$). Finally, the gradient does not have a closed form solution. Instead, it is implemented using the backpropagation algorithm, which will be described next.
+\begin{tcolorbox}
+	\begin{center}
+		\textbf{SGD for Neural Networks}
+	\end{center}
+	\textbf{Parameters:}\\
+	\-\ \quad Number of iterations $\tau$\\
+	\-\ \quad Step size sequence $\eta_1,\eta_2,\dots\eta_\tau$\\
+	\-\ \quad Regularization parameter $\lambda>0$\\
+	
+	\textbf{Input}:\\
+	\-\ \quad Network: layered graph $G=(V,E)$\\
+	\-\ \quad Differentiable activation function $\sigma:\mathds{R}\to\mathds{R}$\\
+	
+	\textbf{Algorithm}:\\
+	\-\ \quad Chose $\vb{w}^{[1]}\in\mathds{R}^{\abs{E}}$ at random\\
+	\-\ \quad\qquad (from a distribution s.t. $\vb{w}^{[1]}$ is close enough to $\vb{0}$)\\
+	\-\ \quad for $s=1,2,\dots,\tau$\\
+	\-\ \qquad\quad sample $(\vb{x},\vb{y})\sim\mcl{D}$\\
+	\-\ \qquad\quad calculate gradient $\vb{v}_s = backpropagation(\vb{x},\vb{y},\vb{w},(E,V),\sigma)$\\
+	\-\ \qquad\quad update $\vb{w}^{[s+1]}=\vb{w}^{[s]}-\eta_s\left(\vb{v}_s+\lambda\vb{w}^{[s]}\right)$\\
+	
+	\textbf{Output}:\\
+	\-\ \quad $\vb{\bar{w}}$ is the best performing $\vb{w}^{[s]}$ on a validation set.
+	
+	\label{box:NN_SGD}
+\end{tcolorbox}
+
+Now we would like to focus on how the algorithm compute the gradient of the vector $\vb{w}$, and so on the function that we called \textbf{backpropagation}. The standard update rule, provided by SGD algorithm would be:
+\[ w_{ij}^{(t)[s+1]}= w_{ij}^{(t)[s]}-\eta_s\pdv{L_S}{w_{ij}^{(t)[s`]}} \]
+where $t$ indicates the layer, $s$ is the iteration index of the algorithm, $\eta_s$ is the learning rate and last partial derivative is nothing but the gradient of the loss function with respect to each single weight, that is
+\[ \pdv{L_S}{w}=\pdv{w}\left(\frac{1}{m}\sum_{i=1}^m\ell(h,(\vb{x}_i,y_i))\right)=\frac{1}{m}\sum_{i=1}^m\pdv{L(h,(\vb{x}_i,y_i))}{w} \]
+and that has to be determined. But, as we know, we can compute the loss function only on the output, i.e. only after the last layer (but recall that each neuron contains also the non-linear activation function).\\
+To describe the backpropagation we start defining the change in error with respect to the weighted average before the non-linear transformation as
+\[ \delta^{(t)}=\pdv{L}{\vb{a^{(t)}}}=\left[\begin{aligned}&\pdv{L}{a_{t,1}}\\&\vdots\\&\pdv{L}{a_{t,d^t}} \end{aligned}\right] \]
+where $a_{t,j}$ is the output of the j-th neuron before the application of the activation function. So we have to decompose the gradient with the chain rule, remembering that each $w_{ij}^{(t)}$ impacts only on $a_{t,j}$ and that $\sigma'$ depends on the selected activation function:
+\[ \pdv{L}{w_{ij}^{(t)}}=\pdv{L}{a_{t,j}}\pdv{a_{t,j}}{w_{ij}^{(t)}}=\delta_j^{(t)}\left(\sum_{k=0}^{d^{(t+1)}}w_{kj}^{(t)}v_{t-1,k}\right)=\delta_j^{(t)}v_{t-1,i} \]
+\[ \delta_j^{(t)}=\pdv{L}{v_{t,j}}\pdv{v_{t,j}}{a_{t,j}}=\pdv{L}{v_{t,j}}\sigma'(a_{t,j}) \]
+But how dows effectively the loss change w.r.t. $v_{t,j}$?
+\begin{itemize}
+	\item Changes in layer $t$ affects only neurons in layer $t+1$ (and then each following layer up tp the loss at the end).
+	\item Each neuron can affect all the neurons in the next layer.
+	\item We need to sum contributions to all the neurons in layer $t+1$.
+	\item We need also $\delta^{(t+1)}$ to compute the $\delta^{(t)}$ (i.e. the solution of the next layer). 
+\end{itemize}
+The last point of the list is the reason of the name of the method.
+\[ \pdv{L}{v_{t,j}}=\sum_{k=1}^{d^{(t+1)}}\pdv{L}{a_{t+1,k}}\pdv{a_{t+1,k}}{v_{t,j}} = \sum_{k=1}^{d^{(t+1)}}w_{jk}^{(t+1)}\delta_k^{(t+1)} \]
+\[ \implies\qquad\delta_j^{(t)}=\sigma'(a_{t,j})\sum_{k=1}^{d^{(t+1)}}w_{jk}^{(t+1)}\delta_k^{(t+1)} \]
+So each layer needs the solution of the following one: at this point the strategy consist into starting from the last layer, since $\delta^{(L)}$ can be computed from the loss on the output, and than backpropagating the gradients through all the layers up to the first.
+\[ v^{(0)}\leftarrow v^{(1)}\leftarrow v^{(2)}\leftarrow \dots \leftarrow v^{(T)} \] 
+We can summarize the backpropagation in the box \ref{box:NN_backpropagation}.
+\begin{tcolorbox}
+	\begin{center}
+		\textbf{BackPropagation}
+	\end{center}
+	\textbf{Input}:\\
+	\-\ \quad Data point $(\vb{x}_i,y_i)$\\
+	\-\ \quad Neural Network (with weights $w_{ij}^{(t)}$, for $1\leq t\leq T$)\\
+	
+	\textbf{Output}:\\
+	\-\ \quad $\delta^{(t)}$ for $t=1,\dots,T$\\
+	\-\ \quad Compute $a^{(t)}$ and $v^{(t)}$ for $t=1,\dots,T$;\\
+	\-\ \quad $\delta^{(L)}\leftarrow\pdv{L}{a^{(L)}}$;\\
+	\-\ \quad for $t=T-1$ downto 1 do\\
+	\-\ \qquad\quad $\delta_j^{(l)}\leftarrow\sigma'(a_{t,j})\cdot\sum_{k=1}^{d^{(l+1)}}w_{jk}^{(t+1)}\delta_k^{(t+1)}$ for all $j=1,\dots,d^{(t)}$\\
+	\-\ \quad return $\delta^{(1)},\dots,\delta^{(T)}$;
+	
+	\label{box:NN_backpropagation}
+\end{tcolorbox}
+Now 
+
+
+
 
 
 
