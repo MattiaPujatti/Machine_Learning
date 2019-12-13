@@ -2079,74 +2079,71 @@ So, practically, if we want to take an input sample and compute the output of th
 \end{tcolorbox}
 
 \subsection{Activation Functions}
-A feedforward neural network is described by a directed acyclic graph, $G=(V,E)$, and a weight function over the edges, $w:E\to\mathds{R}$. Each single neuron is modeled as a simple scalar function, $\sigma:\mathds{R}\to\mathds{R}$. We will focus on some possibilities fr $\sigma$, like the sign function, the threshold function or the sigmoid. We
-call $\sigma$ the “activation” function of the neuron. 
+A feedforward neural network is described by a directed acyclic graph, $G=(V,E)$, and a weight function over the edges, $w:E\to\mathds{R}$. Each single neuron is modeled as a simple scalar function, $\sigma:\mathds{R}\to\mathds{R}$. We will focus on some possibilities for $\sigma$, like the sign function, the threshold function or the sigmoid. We call $\sigma$ the \textit{activation function} of the neurons. 
 \subsubsection{Sign and Threshold Functions}
 \begin{figure}[!h]
-	\begin{minipage}{0.5\textwidth}
+	\centering
+	\begin{minipage}{0.4\textwidth}
 		\[ \begin{aligned}&\sigma(a)=sign(a)\\&\mathds{R}^n\to[-1,1]\end{aligned} \]
 	\end{minipage}
-	\begin{minipage}{0.5\textwidth}
-		image
+	\begin{minipage}{0.4\textwidth}
+	\[ f(x)=\left\{\begin{aligned}&0 \quad\text{if } 0>x\\&1 \quad\text{if } x\geq 0\\ \end{aligned}\right. \]
 	\end{minipage}
 \end{figure}
-\begin{figure}[!h]
-	\begin{minipage}{0.5\textwidth}
-		\[ f(x)=\left\{\begin{aligned}&0 \quad\text{if } 0>x\\&1 \quad\text{if } x\geq 0\\ \end{aligned}\right. \]
-	\end{minipage}
-	\begin{minipage}{0.5\textwidth}
-	image
-	\end{minipage}
-\end{figure}
-\begin{table}[!h]
-	\centering
-	\begin{tabular}{c|c}
-		\textbf{Advantages}& \textbf{Disadvantages}\\
-		\parbox{0.4\textwidth}{\begin{itemize}\item Simple and fast\\ \item Nice interpretation as the firing rate of a neuron \begin{itemize}\item[o] $-1$ = not firing\\ \item[o] $1$ = firing\end{itemize}\end{itemize}} & \parbox{0.4\textwidth}{\begin{itemize}\item Output is not smooth/continuous\\ \item Saturate and kill gradients, thus NN will barely learn\end{itemize}}\\ 
-	\end{tabular}
-\end{table}
+\begin{itemize}
+	\item \textbf{Advantages:}
+	\begin{itemize}
+		\item Simple and fast
+		\item Nice interpretation as the firing rate of a neuron 
+		\begin{itemize}
+			\item[o] $-1$ = not firing
+			\item[o] $1$ = firing
+		\end{itemize}
+	\end{itemize}
+	\item \textbf{Disadvantages:}
+	\begin{itemize}
+		\item Output is not smooth/continuous
+		\item Saturate and kill gradients, thus NN will barely learn
+	\end{itemize}
+\end{itemize}
+		
 \subsubsection{Sigmoid Function}
 \begin{figure}[!h]
-	\begin{minipage}{0.5\textwidth}
-		\[ \begin{aligned}&\sigma(a)=\frac{1}{1+e^{-a}}\\& \sigma'(a)=\sigma(a)[1-\sigma(a)]\\ &\mathds{R}^n\to[0,1]\end{aligned} \]
-	\end{minipage}
-	\begin{minipage}{0.5\textwidth}
-		image
-	\end{minipage}
-\end{figure}
-\begin{table}[!h]
 	\centering
-	\begin{tabular}{c|c}
-		\textbf{Advantages}& \textbf{Disadvantages}\\
-		\parbox{0.4\textwidth}{\begin{itemize}\item Smooth Output\\ \item Nice interpretation as the firing rate of a neuron \begin{itemize}\item[o] $0$ = not firing at all\\ \item[o] $1$ = fully firing\end{itemize}\end{itemize}} & \parbox{0.4\textwidth}{\begin{itemize}\item Sigmoid neurons saturate and kill gradients, thus NN will barely learn: when the neuron's activation are 0 or 1 (saturate) \begin{itemize}\item[o] gradient at these regions is almost zero\\ \item[o] almost no signal will flow to its weights\\ \item[o] if if initial weights are too large then most neurons would saturate \end{itemize}\end{itemize}}\\ 
-	\end{tabular}
-\end{table}
-\subsubsection{Tanh Function}
-\begin{figure}[!h]
-	\begin{minipage}{0.5\textwidth}
-		\[ \begin{aligned}&\sigma(a)=tanh(a)\\& \sigma'(a)=1-[tanh(a)^2]\\ &\mathds{R}^n\to[0,1]\\ &\\ &\text{Tanh is a scaled and shifted sigmoid:}\\ &tanh(x)=2sigm(2x)-1 \end{aligned} \]
-	\end{minipage}
-	\begin{minipage}{0.5\textwidth}
-		image
-	\end{minipage}
+	\includegraphics[scale=1.2]{images/NN_sigmoid_act.pdf}
 \end{figure}
-\begin{table}[!h]
+\begin{itemize}
+	\item \textbf{Advantages:}
+	\begin{itemize}
+		\item Smooth Output
+		\item Nice interpretation as the firing rate of a neuron 
+		\begin{itemize}
+			\item[o] $0$ = not firing at all
+			\item[o] $1$ = fully firing
+		\end{itemize}
+	\end{itemize}
+	\item \textbf{Disadvantages:}
+	\begin{itemize}
+		\item Sigmoid neurons saturate and kill gradients, thus NN will barely learn: when the neuron's activation are 0 or 1 (saturate) 
+		\begin{itemize}
+			\item[o] gradient at these regions is almost zero
+			\item[o] almost no signal will flow to its weights
+			\item[o] if if initial weights are too large then most neurons would saturate 
+		\end{itemize}
+	\end{itemize}
+\end{itemize}
+
+\subsubsection{Tanh and ReLU Function}
+Finally we have these two particular functions, that can be observed in figure \ref{fig:NN_tanh_relu}:
+\begin{figure}[!h]
 	\centering
-	\begin{tabular}{c|c}
-		\textbf{Advantages}& \textbf{Disadvantages}\\
-		Unlike Sigmoid, output is zero-centered & Like Sigmoid, tahn neurons saturate.\\ 
-	\end{tabular}
-\end{table}
-\subsubsection{ReLU Function}
-\begin{figure}[!h]
-	\begin{minipage}{0.5\textwidth}
-		\[ \begin{aligned}&\sigma(a)=max(0,a)\\& \sigma'(a)=\left\{\begin{aligned}& 1\;\text{if } a>0\\ &0\;\text{if } a\leq 0\end{aligned}\right.\\ &\mathds{R}^n\to\mathds{R}^n_+\end{aligned} \]
-	\end{minipage}
-	\begin{minipage}{0.5\textwidth}
-		image
-	\end{minipage}
+	\includegraphics[scale=1.6]{images/NN_tanh_act.pdf}
+	\includegraphics[scale=1.1]{images/NN_ReLU_act.pdf}
+	\caption{Tanh (on the left) and ReLU (on the right) functions}
+	\label{fig:NN_tanh_relu}
 \end{figure}
-\textbf{Advantages}\\
+For what regard $tanh$ function (on the left,) it is just a scaled and shifted version of the sigmoid function (in fact $tanh(x)=2sigm(2x)-1$), and for this reason its use has similar advantages and disadvantages than the sigmoid's one (like the saturation problem). The main difference is that $tanh$ function's output is zero-centered.\\
+$ReLU$ function, instead, it is more interesting: 
 \begin{itemize}
 	\item Trains much faster: 
 	\begin{itemize}
@@ -2300,9 +2297,61 @@ We can summarize the backpropagation in the box \ref{box:NN_backpropagation}.
 	
 	\label{box:NN_backpropagation}
 \end{tcolorbox}
-Now 
-
-
+Now we can finally write a recap of the algorithm in the following box (\ref{box:NN_SGD_backpropagation}).
+\begin{tcolorbox}
+	\begin{center}
+		\textbf{BackPropagation Algorithm with SGD for training Neural Networks}
+	\end{center}
+	\textbf{Input}:\\
+	\-\ \quad Training data $(x_1,y_1),\dots,(x_m,y_m)$\\
+	
+	\textbf{Algorithm}:\\
+	\-\ \quad Initialize $w_{ij}^{(t)}$ $\forall\; i,j,t$\\
+	\-\ \quad for $s\leftarrow 0,1,2,\dots$ do: \hfill\text{// Until convergence}\\
+	\-\ \quad\qquad pick $(x_k,y_k)$ at random from training data;\hfill\text{// SGD}\\
+	\-\ \quad\qquad compute $v_{t,j}\quad\forall\;j,t$\hfill\text{// Forward Propagation}\\
+	\-\ \quad\qquad compute $\delta_j^{(t)}\quad\forall\; j,t$;\hfill\text{// Backward Propagation}\\
+	\-\ \quad\qquad $w_{ij}^{(t)[s+1]} = w_{ij}^{(t)[s]}-\eta v_{t-1,i}\delta_j^{(t)}\quad\forall\; i,j,t$\hfill\text{// Update weights}\\
+	
+	\textbf{Output}:\\
+	\-\ \quad NN weights $w_{ij}^{(t)}$\\
+	
+	\label{box:NN_SGD_backpropagation}
+\end{tcolorbox}
+NN training's tips and tricks:
+\begin{itemize}
+	\item \textbf{Preprocessing}:
+	\begin{itemize}
+		\item Typically all inputs are normalized and centered.
+		\item Both local or global normalization strategies can be used.
+	\end{itemize}
+	\item \textbf{Initialization of the weights}:
+	\begin{itemize}
+		\item All to 0 does not work.
+		\item Random values around 0 (regime where model is roughly linear).
+		\item Uniform or normal distribution can be used.
+		\item Multiple initialization and training, then select the best result (with the smallest training error).
+		\item In deep NN \textit{Glorot} initialization is often used: normal distribution with variance inversely proportional to the sum of the number of incoming and outcoming connections of the neurons.  
+	\end{itemize}
+	\item \textbf{When to stop?}
+	\begin{itemize}
+		\item Small training error.
+		\item Small marginal improvement in error.
+		\item Upper bound on number of iterations.
+	\end{itemize}
+	\item \textbf{Loss function usually has multiple local minima}:
+	\begin{itemize}
+		\item With highly dimensional spaces the risk is smaller than in low dimensional ones.
+		\item Run stochastic gradient descent for different (random) initial weights.
+	\end{itemize}
+	\item \textbf{Regularization}:
+	\begin{itemize}
+		\item Minimize weighted sum of the loss with the sum of all the weights.
+		\item Avoid too large weights and make optimization more stable.
+		\item $L1$ or $L2$ regularization can be used:
+		\[ L1 = L_S(h)+\frac{\lambda}{m}\sum_{ijt}\abs{w_{ij}^{(t)}} \qquad L2 = L_S(h)+\frac{\lambda}{m}\sum_{ijt}\left(w_{ij}^{(t)}\right)^2 \] 
+	\end{itemize}
+\end{itemize}
 
 
 
