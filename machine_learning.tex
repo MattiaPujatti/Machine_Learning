@@ -2028,7 +2028,7 @@ The idea behind neural networks is that many neurons can be joined together by c
 \end{figure}
 So, each neuron:
 \begin{itemize}
-	\item Takes in input the sum of the outputs of the connected neurons from previous layer weighted by the	edge weights.
+	\item Takes in input the sum of the outputs of \textbf{all} the connected neurons from previous layer weighted by the	edge weights.
 	\item Each single neuron is modeled as a simple scalar \textbf{activation function} $\sigma : \mathds{R}\to\mathds{R}$.
 \end{itemize}
 To simplify the description of the calculation performed by the network, we have assumed that the network is organized in layers. That is, the set of nodes can be decomposed into a union of (nonempty) disjoint subsets, $V=\bigcup_{t=0}^T V_t$ such that each edge in $E$ connects some node in $V_{t-1}$ to some node in $V_t$ , for some $t\in[T]$.\\
@@ -2352,6 +2352,74 @@ NN training's tips and tricks:
 		\[ L1 = L_S(h)+\frac{\lambda}{m}\sum_{ijt}\abs{w_{ij}^{(t)}} \qquad L2 = L_S(h)+\frac{\lambda}{m}\sum_{ijt}\left(w_{ij}^{(t)}\right)^2 \] 
 	\end{itemize}
 \end{itemize}
+
+
+
+\chapter{Convolutional Neural Networks}
+
+There are many issues in the \textit{fully connected} feedforward NN moedl we have seen up to now:
+\begin{itemize}
+	\item Each neuron of a generic layer $t-1$ is connected with \textit{each} neuron of layer $t$: this means that there is a very huge number of edges/weights to deal with.
+	\item The domain structure is not taken into account: the model, in fact, doesn't consider that a neuron can be "closer", in the sense of "more correlated", to some, end less to others. Some domains have a structure, for example the pixels in an image (a single pixel is more related to the closer than to the far apart ones) or the letters in a text (a letter in a text is more related to letters of the same word than to the ones 10 pages ahead).\\
+	Interesting features are often local, shift-invariant and deformation-invariant (example in figure \ref{fig:convNN_beaks}):
+		\begin{itemize}
+		\item Some patterns are much smaller than the whole image.
+		\item The same patterns can appear in different places.
+		\item Similar detectors in different regions share similar parameter
+		\begin{figure}[!h]
+			\centering
+			\includegraphics[scale=1]{images/convNN_beaks.pdf}
+			\caption{Example of patterns in an image}
+			\label{fig:convNN_beaks}
+		\end{figure}
+	\end{itemize}
+\end{itemize}    
+
+The main features of this new model of \textit{convolutional} Neural Network are:
+\begin{itemize}
+	\item Local connectivity: receptive field for each neuron.
+	\item Shared ("tied") weights: spatially invariant response.
+	\item Multiple feature maps.
+	\item Subsampling (pooling).
+\end{itemize}
+
+\begin{figure}[!h]
+	\centering
+	\includegraphics[scale=0.7]{images/convNN_scheme.pdf}
+	\caption{So, what about training some "small" detectors and let each detector "move around"?}
+	\label{fig:convNN_scheme}
+\end{figure}
+
+\subsubsection{Local connectivity and shared ("tied") weights}
+\begin{figure}[!h]
+	\begin{minipage}{0.5\textwidth}
+		\includegraphics[scale=0.5]{images/conv_NN_localconn_sharedw.pdf}
+	\end{minipage}
+	\begin{minipage}{0.5\textwidth}
+		As you can see, each orange unit is \textit{only} connected to \textbf{neighboring} blu units. Also, all the orange units share the same weights $\vb{w}$, such that each orange unit computes the same function, but with a different input window.
+	\end{minipage}
+\end{figure}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
