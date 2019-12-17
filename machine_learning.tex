@@ -11,6 +11,7 @@
 \usepackage{tcolorbox} %for boxes of text/math
 \usepackage[hidelinks]{hyperref}
 \usepackage{booktabs}
+\usepackage{wrapfig}
 
 
 
@@ -2368,14 +2369,16 @@ There are many issues in the \textit{fully connected} feedforward NN moedl we ha
 		\item Similar detectors in different regions share similar parameter
 		\begin{figure}[!h]
 			\centering
-			\includegraphics[scale=1]{images/convNN_beaks.pdf}
+			\includegraphics[scale=1.4]{images/convNN_beaks.pdf}
 			\caption{Example of patterns in an image}
 			\label{fig:convNN_beaks}
 		\end{figure}
 	\end{itemize}
 \end{itemize}    
 
-The main features of this new model of \textit{convolutional} Neural Network are:
+In deep learning, a \textit{convolutional neural network} is a class of deep neural networks, most commonly applied to analyzing visual imagery. They are also known as shift invariant or space invariant artificial neural networks (SIANN), based on their shared-weights architecture and translation invariance characteristics. They have applications in image and video recognition, recommender systems, image classification, medical image analysis, and natural language processing.\\
+It is a Deep Learning algorithm which can take in an input image, assign importance (learnable weights and biases) to various aspects/objects in the image and be able to differentiate one from the other. The pre-processing required in a ConvNet is much lower as compared to other classification algorithms. While in primitive methods filters are hand-engineered, with enough training, ConvNets have the ability to learn these filters/characteristics. The architecture of a ConvNet is analogous to that of the connectivity pattern of Neurons in the Human Brain and was inspired by the organization of the Visual Cortex. Individual neurons respond to stimuli only in a restricted region of the visual field known as the Receptive Field. A collection of such fields overlap to cover the entire visual area.\\
+The main features of this new model of convolutional Neural Network are:
 \begin{itemize}
 	\item Local connectivity: receptive field for each neuron.
 	\item Shared ("tied") weights: spatially invariant response.
@@ -2390,39 +2393,97 @@ The main features of this new model of \textit{convolutional} Neural Network are
 	\label{fig:convNN_scheme}
 \end{figure}
 
-\subsubsection{Local connectivity and shared ("tied") weights}
+\textbf{Local connectivity and shared ("tied") weights}\\
+As you can see in figure \ref{fig:convNN_feat}, on the left, each orange unit is \textit{only} connected to \textbf{neighboring} blue units. Also, all the orange units share the same weights $\vb{w}$, such that each one computes the same function, but with a different input window.\\
+\textbf{Multiple feature map}
+Also, if you look at figure \ref{fig:convNN_feat} (this time on the right) you can see that all orange units compute the same function, but with different input windows, differently from the one computed by red units.\\
+
+
 \begin{figure}[!h]
-	\begin{minipage}{0.5\textwidth}
-		\includegraphics[scale=0.5]{images/conv_NN_localconn_sharedw.pdf}
-	\end{minipage}
-	\begin{minipage}{0.5\textwidth}
-		As you can see, each orange unit is \textit{only} connected to \textbf{neighboring} blu units. Also, all the orange units share the same weights $\vb{w}$, such that each orange unit computes the same function, but with a different input window.
-	\end{minipage}
+	\centering
+	\includegraphics[scale=0.8]{images/convNN_localconn_sharedw.pdf}\hfill
+	\includegraphics[scale=0.8]{images/convNN_multfeat.pdf}
+	\caption{Convolutional NN features} 
+	\label{fig:convNN_feat}	
 \end{figure}
 
+\newpage
+
+\section{Application of a CNN to an image (just an deepening)}
+In figure \ref{fig:convNN_image_scheme}, we have an RGB image which has been separated by its three color lanes (red, green and blue). You can imagine how computationally intensive things would get once the images reach dimensions, say 8K. The role of the CNN is to reduce the images into a form which is easier to process, without losing features which are critical for getting a good prediction. This is important when we are to design an architecture which is not only good at learning features but also is scalable to massive datasets.\\
+\begin{figure}[!h]
+	\centering
+	\includegraphics[scale=1.5]{images/convNN_image_scheme.pdf}
+	\caption{Convolutional NN features}
+	\label{fig:convNN_image_scheme}	
+\end{figure}
+An image is nothing but a matrix of pixel values, right? So why not just flatten the image (e.g. 3x3 image matrix into a 9x1 vector) and feed it to a Multi-Level Perceptron for classification purposes? Uh.. not really. In cases of extremely basic binary images, the method might show an average precision score while performing prediction of classes but would have little to no accuracy when it comes to complex images having pixel dependencies throughout. A Convolutional NN is able to successfully capture the spatial and temporal dependencies in an image through the application of relevant filters. The architecture performs a better fitting to the image dataset due to the reduction in the number of parameters involved and reusability of weights. In other words, the network can be trained to understand the sophistication of the image better.\\
+
+Back to our figure, we can start considering a generic (simpler) example: we have an image of dimension 5 (Height) x 5(Breadth) x 1(Number of channels), to which we apply a \textit{kernel/filter}, we simply choose a 3 x 3 x 1 matrix, to "extract" the convolutional layer:
+\[ \left(\begin{array}{c c c}
+1  &0  &1\\ 0  &1  &0\\ 1  &0  &1\\
+\end{array}\right) \]
+\begin{figure}[!h]
+	\centering
+	\includegraphics[scale=0.9]{images/convNN_image_convlay.pdf}
+	\caption{Calculation of the convolutional layer}
+	\label{fig:convNN_image_base_appl}	
+\end{figure}
+
+The filter moves to the right with a certain \textit{Stride Value} (in this case 1) till it parses the complete width. Moving on, it hops down to the beginning (left) of the image with the same stride value and repeats the process until the entire image is traversed.\\
+In the case of images with multiple channels (e.g. RGB), the Kernel has the same depth as that of the input image. Matrix multiplication is performed between over all the "layers" of the image, and all the results are summed with the bias to give us a squashed one-depth channel Convoluted Feature Output, as we can see in figure \ref{fig:convNN_image_multchann}.
+
+\begin{figure}[!h]
+	\centering
+	\includegraphics[scale=1.1]{images/convNN_image_multconvlay.pdf}
+	\caption{Calculation of the convolutional layer for a multiple channel image}
+	\label{fig:convNN_image_multchann}
+\end{figure}
+
+The objective of the Convolution Operation is to extract the high-level features such as edges, from the input image. Convolutional NN need not be limited to only one Convolutional Layer. Conventionally, the first one is responsible for capturing the low-level features such as edges, color, gradient orientation, etc. With added layers, the architecture adapts to the high-level features as well, giving us a network which has the wholesome understanding of images in the dataset, similar to how we would.\\
+
+\subsubsection{Pooling Layer}
+Similar to the Convolutional Layer, the Pooling layer is responsible for reducing the spatial size of the convolved feature. This is to decrease the computational power required to process the data through dimensionality reduction. Furthermore, it is useful for extracting dominant features which are rotational and positional invariant, thus maintaining the process of effectively training of the model. There are two types of Pooling: Max Pooling and Average Pooling. Max Pooling returns the maximum value from the portion of the image covered by the Kernel. On the other hand, Average Pooling returns the average of all the values from the portion of the image covered by the Kernel. Max Pooling also performs as a Noise Suppressant. It discards the noisy activations altogether and also performs de-noising along with dimensionality reduction. On the other hand, Average Pooling simply performs dimensionality reduction as a noise suppressing mechanism. Hence, we can say that Max Pooling performs a lot better than Average Pooling. The Convolutional Layer and the Pooling Layer, together form the i-th layer of a Convolutional Neural Network. Depending on the complexities in the images, the number of such layers may be increased for capturing low-levels details even further, but at the cost of more computational power.
+\begin{figure}[!h]
+	\centering
+	\includegraphics[scale=1]{images/convNN_image_pooling.pdf}
+	\caption{Types of pooling}
+	\label{fig:convNN_image_pooling}
+\end{figure}
+
+\subsubsection{Classification — Fully Connected Layer}
+Adding a Fully-Connected layer is a (usually) cheap way of learning non-linear combinations of the high-level features as represented by the output of the convolutional layer. The Fully-Connected layer is learning a possibly non-linear function in that space.
+\begin{figure}[!h]
+	\centering
+	\includegraphics[scale=1.2]{images/convNN_image_classification.pdf}
+	\caption{Classification with a fully connected layer}
+	\label{fig:convNN_image_classification}
+\end{figure}
+Now that we have converted our input image into a suitable form for our Multi-Level Perceptron, we shall flatten the image into a column vector. The flattened output is fed to a feed-forward neural network and backpropagation applied to every iteration of training. Over a series of epochs, the model is able to distinguish between dominating and certain low-level features in images and classify them.
 
 
 
 
 
+\chapter{Deep Learning: Advanced Approaches}
+In this chapter we will make a small introduction on deep learning, focusing on 3 principal topics/features:
+\begin{enumerate}
+	\item \textit{Modeling temporal information}: Recurrent	Neural Networks (RNN) and Long-Short Term	Memory (LSTM)
+	\item \textit{Generative models}: Generative Adversarial Networks (GAN)
+	\item \textit{Advanced CNN schemes}: Residual networks, skip	connections, auto-encoders
+\end{enumerate}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+\section{Exploit Temporal Information}
+Not all problems can be fitted into a representation with fixed-length inputs and outputs! We just need to think, for example, to a problem that act on a series of bits and requires an output "YES" if the number of 1s is even, or "NO" if it is not (e.g. "1000010101" is a YES (4 ones) while "100011" is NO (3 ones)). So it is hard or impossible to choose a fixed context window from problems like this, because there can always be a new sample longer than anything seen until now.\\
+Also problem such as \textit{speed recognition} or \textit{time-series prediction} require a system able to store and use context information.\\
+In this case, the so called \textbf{Recurrent Neural Networks} (RNN) come into our help. Such algorithms, schematized in figure \ref{fig:DL_RNN}, take the previous outputs (or hidden state) as new inputs, and with him all the "historical" information brought by it. 
+\begin{figure}[!h]
+	\centering
+	\includegraphics[scale=1]{images/DL_RNN.pdf}
+	\caption{Recurrent Neural Networks}
+	\label{fig:DL_RNN}
+\end{figure}
+RNNs are useful as their intermediate values (state) can store information about past inputs for a time that is not fixed a priori.
 
 
 
