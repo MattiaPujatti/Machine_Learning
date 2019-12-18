@@ -2560,10 +2560,103 @@ Sometimes the output is a \textbf{dendogram} (\ref{fig:dendogram}), a tree diagr
 \end{figure}
 
 \section{Linkage-based Clustering}
+Linkage-based clustering is probably the simplest and most straightforward paradigm of clustering. These algorithms proceed in a sequence of rounds, starting from the trivial clustering that has each data point as a single-point cluster, and then repeatedly merging the "closest" clusters of the previous phase. Consequently, the number of clusters decreases with each such round, until a termination condition is reached. Two parameters, then, need to be determined to define such an algorithm clearly: first we need to decide how to measure (or define) the distance between clusters, and second, we need to determine when to stop merging.\\
+Recall that the input to a clustering algorithm is a between-points distance function, $d$. There are many ways of extending $d$ to a measure of distance between domain subsets (or clusters). The most common ones, compared in figure \ref{fig:clus_lbc_d} are:
+\begin{enumerate}
+	\item \textbf{Single Linkage}: $D(A,B)=\min\left\{d(\vb{x},\vb{x'}):\vb{x}\in A,\vb{x'}\in B \right\}$
+	\item \textbf{Average Linkage}: $D(A,B)=\frac{1}{\abs{A}\abs{B}}\sum_{\vb{x}\in A,\vb{x'}\in B} d(\vb{x},\vb{x'})$
+		\item \textbf{Max Linkage}: $D(A,B)=\max\left\{d(\vb{x},\vb{x'}):\vb{x}\in A,\vb{x'}\in B \right\}$
+\end{enumerate}
+\begin{figure}[!h]
+	\centering
+	\includegraphics[scale=1.3]{images/clus_lbc_distance.pdf}
+	\caption{Comparison between different ways to define the distance between clustering}
+	\label{fig:clus_lbc_d}
+\end{figure}
+The linkage-based clustering algorithms are agglomerative in the sense that they start from data that is completely fragmented and keep building larger and larger clusters as they proceed. Without employing a stopping rule, the outcome of such an algorithm can be described by a clustering dendrogram. If one wishes to turn a dendrogram into a partition of the space (a clustering), one needs to employ a stopping criterion. Common stopping criteria include:
+\begin{itemize}
+	\item Data points are partitioned into $k$ clusters.
+	\item Minimum distance between pair of clusters is $>r$, where $r$ is a parameter provided in input.
+	\item All point are in a cluster (but we get a dendogram).
+\end{itemize}
 
-
-
-
+\section{K-Means}
+Another popular approach to clustering starts by defining a cost function over a parameterized set of possible clusterings and the goal of the clustering algorithm is to find a partitioning (clustering) of minimal cost. Under this paradigm, the clustering task is turned into an optimization problem. Anyway, some assumptions are needed:
+\begin{itemize}
+	\item Data points come from a larger space $\mcl{X}'$ (typically $\mathds{R}^n$)
+	\item Distance function $d(\vb{x},\vb{x}')$ for $\vb{x},\vb{x}'\in\mcl{X}$
+	\item For simplicity we assume $\mcl{X}'=\mathds{R}^n$ and $d(\vb{x},\vb{x}')=\norm{\vb{x}-\vb{x}'}_2$
+\end{itemize}
+The \textit{k-means}, a.k.a. Lloyd algorithm, is one of the simplest clustering algorithms. In k-means, the data is partitioned into disjoint set $C_1,\dots,C_k$ where each $C_i$ is represented by a centroid $\mu_i$. It is assumed that the input set $\mcl{X}$ is embedded in some large metric space $(\mcl{X}',d)$ (so that $\mcl{X}\subseteq\mcl{X}'$) and the centroids are member of $\mcl{X}'$. The k-means objective function measures the squared distance between each point in $\mcl{X}$ to the centroid of its cluster. The centroid of $C_i$ is defined to be
+\[ \mu_i(C_i)=\underset{\mu\in\mcl{X}'}{argmin}\sum_{x\in C_i}d(\vb{x},\mu)^2 \]
+Then, the k-means objective is 
+\[ G_{km}\left((\mcl{X},d),(C_1,\dots,C_k)\right)=\sum_{i=1}^k\sum_{\vb{x}\in C_i}d(\vb{x},\mu_i)^2 \]
+\begin{theorem}
+	Given a cluster $C_i$, the center $\mu_i$ that minimizes $\sum_{\vb{x}\in C_i}d(x,\mu_i)^2$ is
+	\[ \mu_i=\frac{1}{\abs{C_i}}\sum_{\vb{x}\in C_i}\vb{x} \]
+\end{theorem}
+However, it turns out that finding the optimal k-means solution is often computationally infeasible (the problem is NP-hard, and even NP-hard to approximate to within some constant). As an alternative, the following simple iterative algorithm (\ref{box:clus_km}) is often used, so often that, in many cases, the term k-means Clustering refers to the outcome of this algorithm rather than to the clustering that minimizes the k-means objective cost.
+\begin{tcolorbox}
+	\begin{center}
+		\textbf{k-Means}
+	\end{center}
+	\textbf{Input}:\\
+	\-\ $\mcl{X}\subset\mathds{R}^n$\\
+	\-\ Number of clusters $k$\\
+	
+	\textbf{Initialize}: Randomly choose initial centroids $\mu_1,\dots,\mu_k$\\
+	
+	\textbf{repeat until convergence}\\
+	\-\ $\forall i\in[k]$ set $C_i=\left\{\vb{x}\in\mcl{X}:i=argmin_j\norm{\vb{x}-\mu_j} \right\}$\\
+	\-\ (break ties in some arbitrary manner)\\
+	\-\ $\forall i\in[k]$ update $\mu_i=\frac{1}{\abs{C_i}}\sum_{\vb{x}\in C_i}\vb{x}$\\
+	
+	\label{box:clus_km}
+\end{tcolorbox}
+\begin{lemma}
+	Each iteration of the k-means algorithm does not increase the value of the objective function $G_{km}$.
+\end{lemma}
+\begin{proof}
+	To simplify the notation, let us use the shorthand $G(C_1,\dots,C_k)$ for the k-means objective, namely:
+	\[ G(C_1,\dots,C_k)=\min_{\mu_1,\dots,\mu_k\in\mathds{R}^n}\sum_{i=1}^k\sum_{\vb{x}\in C_i}\norm{\vb{x}-\mu_i}^2 \]
+	It is convenient to define $\mu(C_i)=\frac{1}{\abs{C_i}}\sum_{\vb{x}\in C_i}\vb{x}$ and note that $\mu(C_i)=\underset{\mu\in\mathds{R}^n}{argmin}\sum_{\vb{x}\in C_i}\abs{\vb{x}-\mu_i}^2$. Therefore, we can rewrite the k-means objective as
+	\[ G(C_1,\dots,C_k)=\sum_{i=1}^k\sum_{\vb{x}\in C_i}\norm{\vb{x}-\mu(C_i)}^2 \]
+	Consider the update at iteration $t$ of the k-means algorithm. Let $C_1^{(t-1)},\dots,C_k^{(t-1)}$ be the previous partition, let $\mu_i^[(t-1)]=\mu(C_i^{(t-1)})$, and let $C_1^{(t)},\dots,C_k^{(t)}$ be the new partition assigned at iteration $t$. Using the definition of the objective as given at the begin of this proof, we clearly have that
+	\[ G(C_1^{(t)},\dots,C_k^{(t)})\leq \sum_{i=1}^k\sum_{\vb{x}\in C_i}\norm{\vb{x}-\mu(C_i)}^2 \]
+	In addition, the definition of the new partition at time $t$ implies that it minimizes the expression $\sum_{i=1}^k\sum_{\vb{x}\in C_i}\norm{\vb{x}-\mu(C_i)}^2$ over all possible partitions $(C_1,\dots,C_k)$. Hence
+	\[ \sum_{i=1}^k\sum_{\vb{x}\in C_i^{(t)}}\norm{\vb{x}-\mu_i^{(t-1)}}^2\leq \sum_{i=1}^k\sum_{\vb{x}\in C_i^{(t-1)}}\norm{\vb{x}-\mu_i^{(t-1)}}^2 \]
+	So, since the right-hand side of this relation equals $G(C_1^{(t-1)},\dots,C_k^{(t-1)})$, combining all the results that we have obtained until now, we obtain $G(C_1^{(t)},\dots,C_k^{(t)})\leq G(C_1^{(t-1)},\dots,C_k^{(t-1)})$ which concludes our proof.
+\end{proof}
+While the preceding lemma tells us that the k-means objective is monotonically nonincreasing, there is no guarantee on the number of iterations the k-means algorithm needs in order to reach convergence. Furthermore, there is no nontrivial lower bound on the gap between the value of the k-means objective of the algorithm’s output and the minimum possible value of that objective function. In fact, k-means might converge to a point which is not even a local minimum. To improve the results of k-means it is often recommended to repeat the procedure several times with different randomly chosen initial centroids (e.g., we can choose the initial centroids to be random points from the data).\\
+We can write the following stopping criteria to stop the algorithm:
+\begin{enumerate}
+	\item The centroids positions and allocations do not change any more.
+	\item Error improvement below threshold in 2 consecutive iterations ($\Delta G<T_1$).
+	\item Maximum number of iterations.
+	\item Reached a target value for $G$ ($G<T_2$).
+\end{enumerate}
+Complexity:
+\begin{itemize}
+	\item Assignment of $m$ points in $\mathds{R}^n$ to $k$ clusters: time $\order{kmn}$.
+	\item Computation of centers: time $\order{mn}$.
+	\item If convergence after $t$ iterations: time $\order{tkmn}$, (in practice convergence after a few iterations but can be very long on some	critical cases).
+	\item[] (Notation: $m$: \#samples, $k$: \#clusters, $n$: dimensionality of data)
+\end{itemize}
+Finally, we can conclude listing all the pros and cons of the k-means procedure:
+\begin{itemize}
+	\item \textbf{Pro}:
+	\begin{enumerate}
+		\item Fast and simple (true in practice, in theory it is a NP-hard problem).
+		\item Always converges and typically also very fast.
+	\end{enumerate}
+	\item \textbf{Cons}:
+	\begin{enumerate}
+		\item It does not guarantee an optimal solution.
+		\item The solution depends on the initial centroids.
+		\item $k$ must be known a priori.
+		\item Forces spherical symmetry of clusters (in the n-dimensional space).
+	\end{enumerate}
+\end{itemize}
 
 
 
