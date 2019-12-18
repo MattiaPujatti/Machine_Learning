@@ -2490,5 +2490,82 @@ RNNs are useful as their intermediate values (state) can store information about
 
 
 
+
+
+
+
+
+\chapter{Clustering}
+Clustering is one of the most widely used techniques for exploratory data analysis. Across all disciplines, from social sciences to biology to computer science, people try to get a first intuition about their data by identifying meaningful groups among the data points.\\
+
+\section{Supervised and Unsupervised Learning}
+First of all, we should recall the definitions of \textbf{supervised and unsupervised learning}:
+\begin{itemize}
+	\item \textit{Supervised Learning}: there is a labeled training/validation set that can be used to tune algorithm parameters.
+	\item \textit{Unsupervised Learning}: training data is not labeled, i.e. data has not been classified or organized (or there is not training data at all).
+\end{itemize}
+Graphically the problem is represented in figure \ref{fig:clus_supunsup_learn}.\\
+\begin{figure}[!h]
+	\centering
+	\includegraphics[scale=0.75]{images/clus_supunsup_learn.pdf}
+	\caption{Graphical comparison between supervised and unsupervised learning}
+	\label{fig:clus_supunsup_learn}
+\end{figure}
+So, what should we do with unsupervised learning? We are mainly interested into finding some interesting structure in data or, equivalently, organizing it into some meaningful way. So we would like to find a function that describes the structure of such "unlabeled" data. Next approaches will be based on the idea that the data is the realization of an hidden, unknown, probability density function, and so the unsupervised learning is linked to the density
+estimation of an hidden PDF producing the data.\\
+But what is clustering? Intuitively, clustering is the task of grouping a set of objects such that similar objects end up in the same group and dissimilar objects are separated into different groups. Clearly, this description is quite imprecise and possibly ambiguous. Quite surprisingly, it is not at all clear how to come up with a more rigorous definition.\\
+There are several sources for this difficulty. One basic problem is that the two objectives mentioned in the earlier statement may in many cases contradict each other. Mathematically speaking, similarity (or proximity) is not a transitive relation, while cluster sharing is an equivalence relation and, in particular, it is a transitive relation. 
+\begin{example}
+More concretely, suppose that we would like to cluster the points in picture \ref{fig:clus_ex1} into two clusters.
+\begin{figure}[!h]
+	\centering
+	\includegraphics[scale=0.35]{images/clus_ex1.pdf}
+	\caption{Similarity is not trainsitive}
+	\label{fig:clus_ex1}
+\end{figure}
+A clustering algorithm that emphasizes not separating close-by points will cluster this input by separating it horizontally according to the two lines. In contrast, a clustering method that emphasizes not having far-away points share the same cluster will cluster the same input by dividing it vertically into the right-hand half and the
+left-hand half.
+\end{example}
+Another basic problem is the lack of \textit{ground truth} for clustering, which is a
+common problem in unsupervised learning. The goal of supervised learning is clear: we wish to learn a classifier which will predict the labels of future examples as accurately as possible. Furthermore, a supervised learner can estimate the success, or the risk, of its hypotheses using the labeled training data by computing the empirical loss. In contrast, clustering is an unsupervised learning problem; namely, there are no labels that we try to predict. Instead, we wish to organize the data in some meaningful way. As a result, there is no clear success evaluation procedure for clustering. In fact, even on the basis of full knowledge of the underlying data distribution, it is not clear what is the “correct” clustering for that data or how to evaluate a proposed clustering.
+\begin{example}
+	Let's consider, for example, the following set of points (\ref{fig:clus_ex2}) in $\mathds{R}^2$, and suppose we are required to cluster them into two clusters. We have two highly	justifiable solutions.
+	\begin{figure}[!h]
+		\centering
+		\includegraphics[scale=0.35]{images/clus_ex2.pdf}
+		\caption{No "ground truth"}
+		\label{fig:clus_ex2}
+	\end{figure}
+\end{example}
+So, how can we evaluate the performances of a problem like these?\\
+
+However, this phenomenon is not just artificial but occurs in real applications:
+\begin{itemize}
+	\item \textbf{Customer Segmentation}: analyzing, for example, features like product bought, demographic information,.. for a certain zone and for a large number of costumers, clustering can become useful into identifying subgroups of homogeneous customers, that are important for the companies for the advertizing, for product development and so on.
+	\item \textbf{Image Segmentation}: clustering is also useful for image analysis (and so medical imaging, background segmentation in  movies, object recognition, ....). In this case the algorithm uses as samples vectors containing features like color or spatial position of the pixels.
+\end{itemize}
+
+\subsection{Clustering Model}
+Clustering tasks can vary in terms of both the type of input they have and the type of outcome they are expected to compute. For concreteness, we shall focus on the following common setup:
+\begin{itemize}
+	\item \textbf{Input}: a set of elements, $\mcl{X}$, and a distance function over it. This function $d:\mcl{X}\times\mcl{X}\to\mathds{R}_+$ has to be symmetric ($d(x,y)=d(y,x)\;\forall x\in\mcl{X}$), and has to satisfy $d(x,x)=0$ for all $x\in\mcl{X}$ and often also the triangle inequality ($d(x,z)\leq d(x,y)+d(x,z)$). Additionally, some clustering algorithms also require an input parameter $k$ (determining the number of required clusters).
+	\item \textbf{Output}: a partition of the domain set $\mcl{X}$ into subsets. Namely $C=(C_1,C_2,\dots,C_k)$ where $\bigcup_{i=1}^k C_i=\mcl{X}$ and for all $i\neq j$,% $C_i\cap C_j=\0$.
+\end{itemize}
+Sometimes the output is a \textbf{dendogram} (\ref{fig:dendogram}), a tree diagram showing the arrangement of the clusters.
+\begin{figure}[!h]
+	\centering
+	\includegraphics[scale=1]{images/dendogram.pdf}
+	\caption{Tree with input points $x\in\mcl{X}$ as leaves, that shows the arrangement/relation between clusters}
+	\label{fig:dendogram}
+\end{figure}
+
+\section{Linkage-based Clustering}
+
+
+
+
+
+
+
 \end{flushleft}
 \end{document}
